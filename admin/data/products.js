@@ -1,0 +1,74 @@
+var list_product = [
+    {
+        "name": "iPhone 14 Pro Max",
+        "price": 29490000,
+        "description": "Chip Apple A16 Bionic | RAM: 6 GB | Dung lượng: 128 GB | Camera sau: Chính 48 MP & Phụ 12 MP, 12 MP | Camera trước: 12 MP | Pin 4323 mAh, Sạc 20 W",
+        "quantity": 44,
+        "type": "iphone",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-vang-thumb-600x600.jpg",
+        "id": "1"
+    },
+    {
+        "name": "iPhone 14 Pro",
+        "price": 29490000,
+        "description": "Chip Apple A16 Bionic | RAM: 6 GB | Dung lượng: 128 GB | Camera sau: Chính 48 MP & Phụ 12 MP, 12 MP | Camera trước: 12 MP | Pin 3200 mAh, Sạc 20 W",
+        "quantity": 13,
+        "type": "iphone",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/247508/iphone-14-pro-tim-thumb-600x600.jpg",
+        "id": "2"
+    },
+    {
+        "name": "iPhone 11",
+        "price": 11990000,
+        "description": "Chip Apple A13 Bionic | RAM: 4 GB | Dung lượng: 64 GB | Camera sau: 2 camera 12 MP | Camera trước: 12 MP | Pin 3110 mAh, Sạc 18 W",
+        "quantity": 53,
+        "type": "iphone",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/153856/iphone-11-trang-600x600.jpg",
+        "id": "3"
+    },
+    {
+        "name": "iPhone 14 Plus",
+        "price": 24990000,
+        "description": "Chip Apple A15 Bionic | RAM: 6 GB | Dung lượng: 128 GB | Camera sau: 2 camera 12 MP | Camera trước: 12 MP | Pin 4325 mAh, Sạc 20 W",
+        "quantity": 49,
+        "type": "iphone",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/245545/iPhone-14-plus-thumb-den-600x600.jpg",
+        "id": "4"
+    },
+    {
+        "name": "Samsung Galaxy S23 5G",
+        "price": 18390000,
+        "description": "Chip Snapdragon 8 Gen 2 8 nhân | RAM: 8 GB | Dung lượng: 128 GB | Camera sau: Chính 50 MP & Phụ 12 MP, 10 MP | Camera trước: 12 MP | Pin 3900 mAh, Sạc 25 W",
+        "quantity": 66,
+        "type": "samsung",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/264060/samsung-galaxy-s23-600x600.jpg",
+        "id": "5"
+    },
+    {
+        "name": "Samsung Galaxy S21 FE 5G",
+        "price": 10990000,
+        "description": "Chip Exynos 2100 | RAM: 6 GB | Dung lượng: 128 GB | Camera sau: Chính 12 MP & Phụ 12 MP, 8 MP | Camera trước: 32 MP | Pin 4500 mAh, Sạc 25 W",
+        "quantity": 37,
+        "type": "samsung",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/267211/Samsung-Galaxy-S21-FE-vang-1-2-600x600.jpg",
+        "id": "6"
+    },
+    {
+        "name": "Samsung Galaxy S23 Ultra 5G",
+        "price": 28990000,
+        "description": "Chip Snapdragon 8 Gen 2 8 nhân | RAM: 8 GB | Dung lượng: 256 GB | Camera sau: Chính 200 MP & Phụ 12 MP, 10 MP, 10 MP | Camera trước: 12 MP | Pin 5000 mAh, Sạc 45 W",
+        "quantity": 67,
+        "type": "samsung",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/249948/samsung-galaxy-s23-ultra-1-600x600.jpg",
+        "id": "7"
+    },
+    {
+        "name": "Samsung Galaxy A23",
+        "price": 4990000,
+        "description": "Chip Snapdragon 680 | RAM: 4 GB | Dung lượng: 128 GB | Camera sau: Chính 50 MP & Phụ 5 MP, 2 MP, 2 MP | Camera trước: 8 MP | Pin 5000 mAh, Sạc 25 W",
+        "quantity": 38,
+        "type": "samsung",
+        "image": "https://cdn.tgdd.vn/Products/Images/42/262650/samsung-galaxy-a23-cam-thumb-600x600.jpg",
+        "id": "8"
+    }
+];
