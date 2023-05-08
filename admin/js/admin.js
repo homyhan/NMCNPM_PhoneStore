@@ -1,3 +1,4 @@
+var productList = [];
 function setListProducts(newList) {
     window.localStorage.setItem('ListProduct', JSON.stringify(newList));
 }
@@ -87,6 +88,7 @@ function addTableProducts() {
 
     tc.innerHTML = s;
 }
+
 
 // Tìm kiếm
 function timKiemSanPham(inp) {
@@ -357,3 +359,5 @@ function swap(arr, i, j) {
     arr[i].parentNode.replaceChild(tempj, arr[i]);
     arr[j].parentNode.replaceChild(tempi, arr[j]);
 }
+
+

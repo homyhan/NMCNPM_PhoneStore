@@ -43,6 +43,17 @@
         <!-- Sản Phẩm -->
         <div class="sanpham">
             <table class="table-header">
+                <div class="table-footer">
+                    <select name="kieuTimSanPham">
+                        <option value="ma">Tìm theo mã</option>
+                        <option value="ten">Tìm theo tên</option>
+                    </select>
+                    <input type="text" placeholder="Tìm kiếm..." onkeyup="timKiemSanPham(this)">
+                    <button onclick="document.getElementById('khungThemSanPham').style.transform = 'scale(1)'; autoMaSanPham()">
+                        <i class="fa fa-plus-square"></i>
+                        Thêm sản phẩm
+                    </button>
+                </div>
                 <tr>
                     <!-- Theo độ rộng của table content -->
                     <th title="Sắp xếp" style="width: 5%" onclick="sortProductsTable('stt')">Mã <i class="fa fa-sort"></i></th>
@@ -58,7 +69,7 @@
             <div class="table-content">
             </div>
 
-            <div class="table-footer">
+            <!-- <div class="table-footer">
                 <select name="kieuTimSanPham">
                     <option value="ma">Tìm theo mã</option>
                     <option value="ten">Tìm theo tên</option>
@@ -68,7 +79,7 @@
                     <i class="fa fa-plus-square"></i>
                     Thêm sản phẩm
                 </button>
-            </div>
+            </div> -->
 
             <div id="khungThemSanPham" class="overlay">
                 <span class="close" onclick="this.parentElement.style.transform = 'scale(0)';">&times;</span>
@@ -120,7 +131,14 @@
     </div><!-- // sanpham -->
     <footer>
     </footer>
+</script>
+<!-- AXIOS  -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.0/axios.min.js"
+integrity="sha512-OdkysyYNjK4CZHgB+dkw9xQp66hZ9TLqmS2vXaBrftfyJeduVhyy1cOfoxiKdi4/bfgpco6REu6Rb+V2oVIRWg=="
+crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/model//Product.js"></script>
     <script src="data/products.js"></script>
+    <script src="/services/product.js"></script>
     <script src="js/admin.js"></script>
 </body>
 
