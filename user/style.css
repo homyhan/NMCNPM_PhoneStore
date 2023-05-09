@@ -1,0 +1,26 @@
+html, body{
+    height: 100% !important;
+    width: 100% !important;
+}
+.modalCheckout{
+    display: none;
+}
+.modalCheckout{
+    height: 100%;
+    width: 100%;
+    background-color: red;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+.btnClose{
+    display: inline-block;
+    height: 30px;
+    width: 30px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    background-color: white;
+    cursor: pointer;
+}

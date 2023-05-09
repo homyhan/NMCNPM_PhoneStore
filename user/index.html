@@ -36,6 +36,8 @@
       <link rel="stylesheet" href="css/owl.carousel.min.css">
       <link rel="stylesoeet" href="css/owl.theme.default.min.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+
+      <link rel="stylesheet" href="./style.css">
    </head>
    <body>
       <!-- banner bg main start -->
@@ -184,11 +186,15 @@
                                     <ul >
                                        <li style="color: black;">
                                           <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                                          <span class="padding_10" data-bs-toggle="modal" data-bs-target="#modalCart">Cart <span id="amount" class="badge bg-dark text-white ms-1 rounded-pill">0</span></span>
+                                          <span data-bs-toggle="modal" data-bs-target="#modalCart">Cart <span id="amount" class="badge bg-dark text-white ms-1 rounded-pill">0</span></span>
                                        </li>
                                        <li style="color: black;">
                                           <i class="fa fa-user" aria-hidden="true"></i>
-                                          <span class="padding_10" data-bs-toggle="modal" data-bs-target="#modalProfile">User</span>
+                                          <span data-bs-toggle="modal" data-bs-target="#modalProfile">User</span>
+                                       </li>
+                                       <li style="color: black;">
+                                          <i class="fa fa-truck"></i>
+                                          <span data-bs-toggle="modal" data-bs-target="#">Order</span>
                                        </li>
                                     </ul>
                                  </div>
@@ -293,11 +299,40 @@
          </table>
        </div>
        <div class="modal-footer">
-         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-         <button type="button" class="btn btn-primary" onclick="booking()">Đặt hàng</button>
+         <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
+         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="btnOrder()">Đặt hàng</button>
        </div>
      </div>
    </div>
+ </div>
+
+ <!-- MODAL CHECKOUT  -->
+ <div class="modalCheckout">
+   <div>
+      <span class="btnClose">X</span>
+   </div>
+   <div>
+      <table class="table">
+         <thead>
+            <tr>
+               
+               <th>Img</th>
+               <th>Name</th>
+               <th>Price</th>
+               <th>Quantity</th>
+               <th>Total</th>
+               
+            </tr>
+         </thead>
+         <tbody id="contentCheckout">
+            
+         </tbody>
+      </table>
+      <div>
+         <button class=" btn btn-primary" onclick="btnDathang()">Đặt hàng</button>
+      </div>
+   </div>
+
  </div>
 
  <!-- Modal Signin-->
@@ -379,6 +414,7 @@
       <script src="../services/product.js"></script>
       <script src="../model/Product.js"></script>
       <script src="../model/CartItem.js"></script>
+      <script src="../model/OrderItem.js"></script>
       <script src="./user.js"></script>
    </body>
 </html>
