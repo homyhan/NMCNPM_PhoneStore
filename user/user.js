@@ -1,6 +1,7 @@
 // GLOBAL
 var productList = [];
 var cart = [];
+var orderList = [];
 var listAccSignin = [];
 function domId(id) {
   return document.getElementById(id);
@@ -76,11 +77,17 @@ function renderProduct(data) {
         <div class="col-lg-4 col-sm-4">
             <div class="box_main">
             <h4 class="shirt_text">${data[i].name}</h4>
-            <p class="price_text">Start Price  <span style="color: #262626;">${formatCurrencyVND(data[i].price)}</span></p>
+            <p class="price_text">Start Price  <span style="color: #262626;">${formatCurrencyVND(
+              data[i].price
+            )}</span></p>
             <div class="electronic_img"><img src="${data[i].image}"></div>
             <div class="btn_main">
-                <button class="buy_bt" onclick="addToCart('${data[i].id}')">add to cart</button>
-                <button type="button" onclick="selectedProduct('${data[i].id}')" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <button class="buy_bt" onclick="addToCart('${
+                  data[i].id
+                }')">add to cart</button>
+                <button type="button" onclick="selectedProduct('${
+                  data[i].id
+                }')" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
   Detail
 </button>
             </div>
@@ -176,9 +183,11 @@ async function renderCart() {
     for (var i = 0; i < cart.length; i++) {
       html += `
                 <tr>
-                <td><input type="checkbox" name="productsCheckBox" value="${
+                <td><input type="checkbox" class="checkbox" id="${
                   cart[i].product.id
-                }"></td>
+                }" onclick="selectedItemCart(${
+        cart[i].product.id
+      })" name="productsCheckBox" value="${cart[i].product.id}"></td>
                 <td class="product-thumbnail">
                     <img class="img-cart" style="width: 200px; height: 150px; transform: scale(0.8, 1);" src="${
                       cart[i].product.image
@@ -208,7 +217,9 @@ async function renderCart() {
                         </div>
                     </div>
                 </td>
-                <td>${formatCurrencyVND(cart[i].product.price * cart[i].quantity)}</td>
+                <td>${formatCurrencyVND(
+                  cart[i].product.price * cart[i].quantity
+                )}</td>
                 <td><button type="button" onclick="deleteProduct('${
                   cart[i].product.id
                 }')" class="btn btn-danger"><i class="fa fa-trash"></i></button></td>
@@ -371,15 +382,169 @@ function deleteProduct(id) {
     });
 }
 
-function booking() {
-  const productListChecked = document.getElementsByName("productsCheckBox");
-  const selectedProducts = [];
-  productListChecked.forEach((checkbox) => {
-    if (checkbox.checked) {
-      selectedProducts.push(checkbox.value);
-      // console.log(selectedProducts);
-    }
-  });
+function selectedItemCart(id) {
+  var userInfo = getFromLocal("USERLOGIN");
+  productServ
+    .fetchProductDetail(id) //lay thong tin 1 sp tu db
+    .then(function (res) {
+      var product = res.data;
+      var quantity = 1;
+      var cartItem = new CartItem(product, quantity);
+      var isExist = false;
+
+      // orderList.push(cartItem);
+      var checkbox = document.getElementById(id); // Lấy đối tượng checkbox
+
+      // Nếu checkbox được chọn
+      if (checkbox.checked) {
+        orderList.push(cartItem); // Thêm id vào mảng orderList
+      }
+      // Nếu checkbox được bỏ chsọn
+      else {
+        orderList = orderList.filter((item) => item.product.id * 1 !== id * 1);
+      }
+
+      console.log("orderList", orderList);
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
+function btnOrder() {
+  var modalCheckout = document.querySelector(".modalCheckout");
+  modalCheckout.style.display = "block";
+  var html = "";
+  var total = 0;
+  for (var i = 0; i < orderList.length; i++) {
+    total += orderList[i].product.price * orderList[i].quantity;
+    html += `
+              <tr>
+              
+              <td class="product-thumbnail">
+                  <img class="img-cart" style="width: 200px; height: 150px; transform: scale(0.8, 1);" src="${
+                    orderList[i].product.image
+                  }">
+              </td>
+              <td class="product-name">
+                  <h2 class="h5 text-black">${orderList[i].product.name}</h2>
+              </td>
+              <td>${formatCurrencyVND(orderList[i].product.price)}</td>
+              <td>
+                  
+                      
+                          <p style="margin: 0px;" class="form-control text-center tdQuantity">${
+                            orderList[i].quantity
+                          }</p>
+                      
+              </td>
+              <td>${formatCurrencyVND(
+                orderList[i].product.price * orderList[i].quantity
+              )}</td>
+              
+          </tr>
+          
+          
+    `;
+
+    // totalCheck += cart[i].total();
+  }
+  html += `
+          <tr>
+                Tổng hóa đơn: ${formatCurrencyVND(total)}
+          </tr>
+    `;
+  domId("contentCheckout").innerHTML = html;
+}
+
+function btnDathang() {
+  var userInfo = getFromLocal("USERLOGIN");
+  
+  productServ
+    .fetchProfile(userInfo.id)
+    .then((res) => {
+      var currentCart = res.data
+      const rs = cart.filter(
+        (item) =>
+          !orderList.some(
+            (itemOrderList) => itemOrderList.product.id === item.product.id
+          )
+      );
+      var infoOrder = {};
+      infoOrder.orderItem = [...orderList];
+      infoOrder.state = false
+      // var orderItem = [...orderList];
+      currentCart.ordered.push(infoOrder);
+      currentCart.cartList = [...rs];
+      console.log(currentCart);
+      
+      axios
+        .put(
+          "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id,
+          currentCart
+        )
+        .then(async (response) => {
+          console.log("Dat hang thanh cong:", response.data);
+          var modalCheckout = document.querySelector(".modalCheckout");
+          modalCheckout.style.display = "none";
+          var contentCheckout = document.getElementById("contentCheckout");
+          contentCheckout.innerHTML = "";
+          await profile();
+          await productServ.fetchProfile(userInfo.id).then((res) => {
+            console.log("fetch thanh cong", res.data);
+          });
+          console.log("cart ne", cart);
+          renderCart();
+          domId("amount").innerHTML = cart.length;
+          orderList=[];
+        })
+        .catch((error) => {
+          console.error("Lỗi khi cập nhật giỏ hàng:", error);
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function order() {
+  if (orderList.length === 0) {
+    alert("Vui long chon san pham can mua");
+  } else {
+    var userInfo = getFromLocal("USERLOGIN");
+    axios
+      .get("https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id)
+      .then((response) => {
+        const currentCart = response.data;
+
+        // console.log(currentCart);
+        var orderItem = [...orderList];
+        currentCart.ordered.push(orderItem);
+
+        // Thêm sản phẩm mới vào giỏ hàng hiện tại
+        // currentCart.cartList.push(cartItem);
+
+        // API bằng cách gửi yêu cầu PUT
+        axios
+          .put(
+            "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id,
+            currentCart
+          )
+          .then(async (response) => {
+            console.log("Giỏ hàng đã được cập nhật thành công:", response.data);
+            await profile();
+            await productServ.fetchProfile(userInfo.id).then((res) => {
+              console.log("fetch profile", res.data);
+            });
+          })
+          .catch((error) => {
+            console.error("Lỗi khi cập nhật giỏ hàng:", error);
+          });
+      })
+      .catch((error) => {
+        console.log("loi", error);
+      });
+  }
 }
 
 // fetch api
@@ -424,9 +589,11 @@ function saveToLocal(el, name) {
 }
 
 function selectedProduct(id) {
-  const selected = productServ.fetchProductDetail(id).then(res=>{
-    console.log(res.data);
-    const html = `
+  const selected = productServ
+    .fetchProductDetail(id)
+    .then((res) => {
+      console.log(res.data);
+      const html = `
       <b>Name: </b><span>${res.data.name}</span> <br>
       <b>Price: </b><span>${formatCurrencyVND(res.data.price)}</span> <br>
       <b>Description: </b><p>${res.data.description.replace(/\|/g, "<br>")}</p> 
@@ -435,10 +602,11 @@ function selectedProduct(id) {
       </div>
       
     `;
-    domId("contentDetail").innerHTML = html;
-  }).catch(err=>{
-    console.log(err);
-  })
+      domId("contentDetail").innerHTML = html;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 async function signin(e) {
@@ -466,10 +634,16 @@ async function signin(e) {
 }
 
 function formatCurrencyVND(number) {
-  let formatter = new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    minimumFractionDigits: 0
+  let formatter = new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    minimumFractionDigits: 0,
   });
   return formatter.format(number);
 }
+
+
+document.querySelector('.btnClose').addEventListener('click', function () {
+  var modalCheckout = document.querySelector(".modalCheckout");
+  modalCheckout.style.display = "none";
+})
