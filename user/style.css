@@ -33,3 +33,6 @@ html, body{
 .btnLogout{
     display: none;
 }
+.login_menu li:hover{
+    cursor: pointer;
+}
