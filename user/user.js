@@ -109,8 +109,6 @@ function addToCart(id) {
       var cartItem = new CartItem(product, quantity);
       var isExist = false;
 
-      // console.log(cart);
-
       // Lấy thông tin giỏ hàng hiện tại từ API
       axios
         .get(
@@ -187,7 +185,7 @@ async function renderCart() {
                   cart[i].product.id
                 }" onclick="selectedItemCart(${
         cart[i].product.id
-      })" name="productsCheckBox" value="${cart[i].product.id}"></td>
+      })" data-index="${cart[i].product.id}" value="${cart[i].product.id}"></td>
                 <td class="product-thumbnail">
                     <img class="img-cart" style="width: 200px; height: 150px; transform: scale(0.8, 1);" src="${
                       cart[i].product.image
@@ -374,8 +372,6 @@ function deleteProduct(id) {
 
       renderCart();
 
-      // var count = cart.length;
-      // domId("amount").innerHTML = count;
     })
     .catch(function (err) {
       console.log(err);
@@ -384,37 +380,42 @@ function deleteProduct(id) {
 
 function selectedItemCart(id) {
   var userInfo = getFromLocal("USERLOGIN");
-  productServ
-    .fetchProductDetail(id) //lay thong tin 1 sp tu db
-    .then(function (res) {
-      var product = res.data;
-      var quantity = 1;
-      var cartItem = new CartItem(product, quantity);
-      var isExist = false;
 
-      // orderList.push(cartItem);
-      var checkbox = document.getElementById(id); // Lấy đối tượng checkbox
-
-      // Nếu checkbox được chọn
-      if (checkbox.checked) {
-        orderList.push(cartItem); // Thêm id vào mảng orderList
-      }
-      // Nếu checkbox được bỏ chsọn
-      else {
-        orderList = orderList.filter((item) => item.product.id * 1 !== id * 1);
-      }
-
-      console.log("orderList", orderList);
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
+      axios
+        .get(
+          "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id
+        )
+        .then((res) => {
+          const currentCart = res.data;
+          var checkbox = document.getElementById(id); 
+          var newArr =[];
+          if(checkbox.checked){
+            
+            newArr = currentCart.cartList.filter((item)=>{
+              return item.product.id === checkbox.id
+            });
+            orderList.push(newArr[0]);
+            console.log(orderList);
+          }else{
+            orderList = orderList.filter(item=>{
+              return item.product.id*1 !== checkbox.id*1
+            });
+            console.log(orderList);
+          }
+          console.log(orderList);
+         
+         
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      
 }
 
 function btnOrder() {
-  if(orderList.length === 0) return alert("VUi long chon san pham can mua");
+  if (orderList.length === 0) return alert("VUi long chon san pham can mua");
   var modalCheckout = document.querySelector(".modalCheckout");
-  modalCheckout.style.display = "block";  
+  modalCheckout.style.display = "block";
   var html = "";
   var total = 0;
   for (var i = 0; i < orderList.length; i++) {
@@ -450,23 +451,23 @@ function btnOrder() {
 
     // totalCheck += cart[i].total();
   }
-  
+
   // html += `
   //         <tr style="font-size: 28px">
-  //               Tổng hóa đơn: 
+  //               Tổng hóa đơn:
   //         </tr>
   //   `;
-    domId("tongHoaDon").innerHTML = `Tổng hóa đơn: ${formatCurrencyVND(total)}`
+  domId("tongHoaDon").innerHTML = `Tổng hóa đơn: ${formatCurrencyVND(total)}`;
   domId("contentCheckout").innerHTML = html;
 }
 
 function btnDathang() {
   var userInfo = getFromLocal("USERLOGIN");
-  
+
   productServ
     .fetchProfile(userInfo.id)
     .then((res) => {
-      var currentCart = res.data
+      var currentCart = res.data;
       const rs = cart.filter(
         (item) =>
           !orderList.some(
@@ -475,12 +476,12 @@ function btnDathang() {
       );
       var infoOrder = {};
       infoOrder.orderItem = [...orderList];
-      infoOrder.state = false
+      infoOrder.state = false;
       // var orderItem = [...orderList];
       currentCart.ordered.push(infoOrder);
       currentCart.cartList = [...rs];
       console.log(currentCart);
-      
+
       axios
         .put(
           "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id,
@@ -500,7 +501,7 @@ function btnDathang() {
           fetchOrder();
           renderCart();
           domId("amount").innerHTML = cart.length;
-          orderList=[];
+          orderList = [];
         })
         .catch((error) => {
           console.error("Lỗi khi cập nhật giỏ hàng:", error);
@@ -524,9 +525,6 @@ function order() {
         // console.log(currentCart);
         var orderItem = [...orderList];
         currentCart.ordered.push(orderItem);
-
-        // Thêm sản phẩm mới vào giỏ hàng hiện tại
-        // currentCart.cartList.push(cartItem);
 
         // API bằng cách gửi yêu cầu PUT
         axios
@@ -566,8 +564,12 @@ async function fetchAccSigninList() {
 
 //khi vừa vào trang -> call api để render product
 window.onload = async function () {
-  const userInfo = getFromLocal("USERLOGIN");  
-  
+  const userInfo = getFromLocal("USERLOGIN");
+  if (userInfo) {
+    document.querySelector(".btnLogout").style.display = "block";
+    document.querySelector(".btnSignin").style.display = "none";
+  }
+
   await profile();
   await fetchProductList();
   await fetchAccSigninList();
@@ -629,8 +631,8 @@ async function signin(e) {
       console.log(listAccSignin[i].email, listAccSignin[i].password);
       console.log("signin thanh cong");
       saveToLocal(listAccSignin[i], "USERLOGIN");
-      document.querySelector('.btnLogout').style.display = "block";
-      document.querySelector('.btnSignin').style.display = "none";
+      document.querySelector(".btnLogout").style.display = "block";
+      document.querySelector(".btnSignin").style.display = "none";
       await profile();
       await fetchOrder();
       await productServ.fetchProfile(listAccSignin[i].id).then((res) => {
@@ -652,88 +654,101 @@ function formatCurrencyVND(number) {
   return formatter.format(number);
 }
 
-
-document.querySelector('.btnClose').addEventListener('click', function () {
+document.querySelector(".btnClose").addEventListener("click", function () {
   var modalCheckout = document.querySelector(".modalCheckout");
   modalCheckout.style.display = "none";
-})
+  const checkboxes = document.querySelectorAll('.checkbox');
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  orderList=[];
+});
 
 async function fetchOrder() {
   const userInfo = getFromLocal("USERLOGIN");
-  var html ='';
-  var listOrder = await productServ.fetchCart(userInfo.account).then(res=>{
-    console.log("fetch for order", res.data[0].ordered);
-    const listOrdered = res.data[0].ordered;    
-    listOrdered.map((item, index)=>{
-      html += `
+  var html = "";
+  var listOrder = await productServ
+    .fetchCart(userInfo.account)
+    .then((res) => {
+      console.log("fetch for order", res.data[0].ordered);
+      const listOrdered = res.data[0].ordered;
+      listOrdered.map((item, index) => {
+        html += `
         <div>
-          <p style="margin: 0px">${item.orderItem.map((itemName)=>{
-            return `<div>
-              <p style="margin: 0px">${itemName.quantity} ${itemName.product.name} - ${formatCurrencyVND(itemName.product.price*itemName.quantity)}</p>
-            </div>`
-          }).join('')}</p>        
+          <p style="margin: 0px">${item.orderItem
+            .map((itemName) => {
+              return `<div>
+              <p style="margin: 0px">${itemName.quantity} ${
+                itemName.product.name
+              } - ${formatCurrencyVND(
+                itemName.product.price * itemName.quantity
+              )}</p>
+            </div>`;
+            })
+            .join("")}</p>        
         </div>
         <div >
           <p style="margin: 0px" class="text-end">
-            Trạng thái: ${item.state === false ? 'Đang chờ xác nhận' : 'Đã được xác nhận'}
+            Trạng thái: ${
+              item.state === false ? "Đang chờ xác nhận" : "Đã được xác nhận"
+            }
           </p>
           <p style="margin: 0px" class="text-end">
-            <button onclick="cancelOrder(${index})" ${item.state === true ? 'style="cursor: not-allowed"': ''} class="btn btn-danger" ${item.state===true ? 'disabled': ''}>Huy</button>
+            <button onclick="cancelOrder(${index})" ${
+          item.state === true ? 'style="cursor: not-allowed"' : ""
+        } class="btn btn-danger" ${
+          item.state === true ? "disabled" : ""
+        }>Huy</button>
           </p>
         </div>
         <hr>
-      `
+      `;
+      });
+      domId("contentOrdered").innerHTML = html;
     })
-    domId("contentOrdered").innerHTML = html;
-  }).catch(err=>{
-    console.log(err);
-  })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 function cancelOrder(id) {
-  const userInfo = getFromLocal("USERLOGIN");  
+  const userInfo = getFromLocal("USERLOGIN");
   console.log(id);
 
   //     // Lấy thông tin giỏ hàng hiện tại từ API
-      axios
-        .get(
-          "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id
-        )
-        .then((response) => {
-          const currentOrder = response.data;
-          console.log("huy order", currentOrder);          
-          
-          currentOrder.ordered = currentOrder.ordered.filter((item, index)=>{
-            return index !== id;
-          })
-          console.log(currentOrder.ordered);
+  axios
+    .get("https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id)
+    .then((response) => {
+      const currentOrder = response.data;
+      console.log("huy order", currentOrder);
 
-          // // API bằng cách gửi yêu cầu PUT
-          axios
-            .put(
-              "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" +
-                userInfo.id,
-              currentOrder
-            )
-            .then(async (response) => {
-              console.log("Giỏ hàng đã xoa mot san pham:", response.data);
-              await profile();
-              await productServ.fetchProfile(userInfo.id).then((res) => {
-                console.log("fetch huy don hang: ", res.data);
-              });
-              fetchOrder();
-            })
-            .catch((error) => {
-              console.error("Lỗi khi cập nhật giỏ hàng:", error);
-            });
+      currentOrder.ordered = currentOrder.ordered.filter((item, index) => {
+        return index !== id;
+      });
+      console.log(currentOrder.ordered);
+
+      // // API bằng cách gửi yêu cầu PUT
+      axios
+        .put(
+          "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id,
+          currentOrder
+        )
+        .then(async (response) => {
+          console.log("Giỏ hàng đã xoa mot san pham:", response.data);
+          await profile();
+          await productServ.fetchProfile(userInfo.id).then((res) => {
+            console.log("fetch huy don hang: ", res.data);
+          });
+          fetchOrder();
+        })
+        .catch((error) => {
+          console.error("Lỗi khi cập nhật giỏ hàng:", error);
         });
-          
+    });
 }
 
 function logout() {
-
-  localStorage.removeItem('USERLOGIN');
-  document.querySelector('.btnLogout').style.display = "none"
-  document.querySelector('.btnSignin').style.display = "block";
-
+  localStorage.removeItem("USERLOGIN");
+  document.querySelector(".btnLogout").style.display = "none";
+  document.querySelector(".btnSignin").style.display = "block";
 }
