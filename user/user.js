@@ -412,8 +412,9 @@ function selectedItemCart(id) {
 }
 
 function btnOrder() {
+  if(orderList.length === 0) return alert("VUi long chon san pham can mua");
   var modalCheckout = document.querySelector(".modalCheckout");
-  modalCheckout.style.display = "block";
+  modalCheckout.style.display = "block";  
   var html = "";
   var total = 0;
   for (var i = 0; i < orderList.length; i++) {
@@ -449,11 +450,13 @@ function btnOrder() {
 
     // totalCheck += cart[i].total();
   }
-  html += `
-          <tr>
-                Tổng hóa đơn: ${formatCurrencyVND(total)}
-          </tr>
-    `;
+  
+  // html += `
+  //         <tr style="font-size: 28px">
+  //               Tổng hóa đơn: 
+  //         </tr>
+  //   `;
+    domId("tongHoaDon").innerHTML = `Tổng hóa đơn: ${formatCurrencyVND(total)}`
   domId("contentCheckout").innerHTML = html;
 }
 
@@ -494,6 +497,7 @@ function btnDathang() {
             console.log("fetch thanh cong", res.data);
           });
           console.log("cart ne", cart);
+          fetchOrder();
           renderCart();
           domId("amount").innerHTML = cart.length;
           orderList=[];
@@ -562,7 +566,8 @@ async function fetchAccSigninList() {
 
 //khi vừa vào trang -> call api để render product
 window.onload = async function () {
-  const userInfo = getFromLocal();
+  const userInfo = getFromLocal("USERLOGIN");  
+  
   await profile();
   await fetchProductList();
   await fetchAccSigninList();
@@ -570,6 +575,8 @@ window.onload = async function () {
   var count = cart.length;
   domId("amount").innerHTML = count;
   console.log("cart", cart);
+
+  await fetchOrder();
   // console.log("productList", productList);
   console.log("res acc", listAccSignin);
 };
@@ -622,7 +629,10 @@ async function signin(e) {
       console.log(listAccSignin[i].email, listAccSignin[i].password);
       console.log("signin thanh cong");
       saveToLocal(listAccSignin[i], "USERLOGIN");
+      document.querySelector('.btnLogout').style.display = "block";
+      document.querySelector('.btnSignin').style.display = "none";
       await profile();
+      await fetchOrder();
       await productServ.fetchProfile(listAccSignin[i].id).then((res) => {
         console.log("fetch thanh cong", res.data);
       });
@@ -647,3 +657,83 @@ document.querySelector('.btnClose').addEventListener('click', function () {
   var modalCheckout = document.querySelector(".modalCheckout");
   modalCheckout.style.display = "none";
 })
+
+async function fetchOrder() {
+  const userInfo = getFromLocal("USERLOGIN");
+  var html ='';
+  var listOrder = await productServ.fetchCart(userInfo.account).then(res=>{
+    console.log("fetch for order", res.data[0].ordered);
+    const listOrdered = res.data[0].ordered;    
+    listOrdered.map((item, index)=>{
+      html += `
+        <div>
+          <p style="margin: 0px">${item.orderItem.map((itemName)=>{
+            return `<div>
+              <p style="margin: 0px">${itemName.quantity} ${itemName.product.name} - ${formatCurrencyVND(itemName.product.price*itemName.quantity)}</p>
+            </div>`
+          }).join('')}</p>        
+        </div>
+        <div >
+          <p style="margin: 0px" class="text-end">
+            Trạng thái: ${item.state === false ? 'Đang chờ xác nhận' : 'Đã được xác nhận'}
+          </p>
+          <p style="margin: 0px" class="text-end">
+            <button onclick="cancelOrder(${index})" ${item.state === true ? 'style="cursor: not-allowed"': ''} class="btn btn-danger" ${item.state===true ? 'disabled': ''}>Huy</button>
+          </p>
+        </div>
+        <hr>
+      `
+    })
+    domId("contentOrdered").innerHTML = html;
+  }).catch(err=>{
+    console.log(err);
+  })
+}
+
+function cancelOrder(id) {
+  const userInfo = getFromLocal("USERLOGIN");  
+  console.log(id);
+
+  //     // Lấy thông tin giỏ hàng hiện tại từ API
+      axios
+        .get(
+          "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id
+        )
+        .then((response) => {
+          const currentOrder = response.data;
+          console.log("huy order", currentOrder);          
+          
+          currentOrder.ordered = currentOrder.ordered.filter((item, index)=>{
+            return index !== id;
+          })
+          console.log(currentOrder.ordered);
+
+          // // API bằng cách gửi yêu cầu PUT
+          axios
+            .put(
+              "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" +
+                userInfo.id,
+              currentOrder
+            )
+            .then(async (response) => {
+              console.log("Giỏ hàng đã xoa mot san pham:", response.data);
+              await profile();
+              await productServ.fetchProfile(userInfo.id).then((res) => {
+                console.log("fetch huy don hang: ", res.data);
+              });
+              fetchOrder();
+            })
+            .catch((error) => {
+              console.error("Lỗi khi cập nhật giỏ hàng:", error);
+            });
+        });
+          
+}
+
+function logout() {
+
+  localStorage.removeItem('USERLOGIN');
+  document.querySelector('.btnLogout').style.display = "none"
+  document.querySelector('.btnSignin').style.display = "block";
+
+}

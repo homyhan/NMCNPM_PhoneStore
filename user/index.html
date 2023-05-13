@@ -53,9 +53,14 @@
                            <li><a href="#">About</a></li>
                            <li><a href="#">Contact</a></li>
                            <li><a href="#">Admin</a></li>
-                           <li>
+                           <li class="btnSignin">
                               <a style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalSignin">
                                  Signin
+                               </a>
+                           </li>
+                           <li class="btnLogout">
+                              <a onclick="logout()" style="cursor: pointer;">
+                                 Logout
                                </a>
                            </li>
                         </ul>
@@ -194,7 +199,7 @@
                                        </li>
                                        <li style="color: black;">
                                           <i class="fa fa-truck"></i>
-                                          <span data-bs-toggle="modal" data-bs-target="#">Order</span>
+                                          <span data-bs-toggle="modal" data-bs-target="#modalOrder">Order</span>
                                        </li>
                                     </ul>
                                  </div>
@@ -264,10 +269,23 @@
        <div id="contentDetail" class="modal-body">
          
        </div>
-       <div class="modal-footer">
-         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-         <button type="button" class="btn btn-primary">Save changes</button>
+       
+     </div>
+   </div>
+ </div>
+
+ <!-- MODAL SHIP  --> 
+<div class="modal fade" id="modalOrder" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h1 class="modal-title fs-5" id="exampleModalLabel">Order</h1>
+         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
        </div>
+       <div id="contentOrdered" class="modal-body">
+         
+       </div>
+       
      </div>
    </div>
  </div>
@@ -328,7 +346,8 @@
             
          </tbody>
       </table>
-      <div>
+      <div class="text-end text-white">
+         <p id="tongHoaDon" class="fs-2">1</p>
          <button class=" btn btn-primary" onclick="btnDathang()">Đặt hàng</button>
       </div>
    </div>
