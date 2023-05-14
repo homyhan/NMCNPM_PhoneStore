@@ -3,6 +3,7 @@ var productList = [];
 var cart = [];
 var orderList = [];
 var listAccSignin = [];
+var arrType = [];
 function domId(id) {
   return document.getElementById(id);
 }
@@ -371,7 +372,6 @@ function deleteProduct(id) {
       // renderCheckout();
 
       renderCart();
-
     })
     .catch(function (err) {
       console.log(err);
@@ -381,35 +381,29 @@ function deleteProduct(id) {
 function selectedItemCart(id) {
   var userInfo = getFromLocal("USERLOGIN");
 
-      axios
-        .get(
-          "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id
-        )
-        .then((res) => {
-          const currentCart = res.data;
-          var checkbox = document.getElementById(id); 
-          var newArr =[];
-          if(checkbox.checked){
-            
-            newArr = currentCart.cartList.filter((item)=>{
-              return item.product.id === checkbox.id
-            });
-            orderList.push(newArr[0]);
-            console.log(orderList);
-          }else{
-            orderList = orderList.filter(item=>{
-              return item.product.id*1 !== checkbox.id*1
-            });
-            console.log(orderList);
-          }
-          console.log(orderList);
-         
-         
-        })
-        .catch((err) => {
-          console.log(err);
+  axios
+    .get("https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id)
+    .then((res) => {
+      const currentCart = res.data;
+      var checkbox = document.getElementById(id);
+      var newArr = [];
+      if (checkbox.checked) {
+        newArr = currentCart.cartList.filter((item) => {
+          return item.product.id === checkbox.id;
         });
-      
+        orderList.push(newArr[0]);
+        console.log(orderList);
+      } else {
+        orderList = orderList.filter((item) => {
+          return item.product.id * 1 !== checkbox.id * 1;
+        });
+        console.log(orderList);
+      }
+      console.log(orderList);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 function btnOrder() {
@@ -574,6 +568,7 @@ window.onload = async function () {
   await fetchProductList();
   await fetchAccSigninList();
   renderCart();
+  // renderType();
   var count = cart.length;
   domId("amount").innerHTML = count;
   console.log("cart", cart);
@@ -581,6 +576,8 @@ window.onload = async function () {
   await fetchOrder();
   // console.log("productList", productList);
   console.log("res acc", listAccSignin);
+
+  await type();
 };
 
 // LẤY DỮ LIỆU TỪ LOCALHOST
@@ -657,11 +654,11 @@ function formatCurrencyVND(number) {
 document.querySelector(".btnClose").addEventListener("click", function () {
   var modalCheckout = document.querySelector(".modalCheckout");
   modalCheckout.style.display = "none";
-  const checkboxes = document.querySelectorAll('.checkbox');
-  checkboxes.forEach(checkbox => {
+  const checkboxes = document.querySelectorAll(".checkbox");
+  checkboxes.forEach((checkbox) => {
     checkbox.checked = false;
   });
-  orderList=[];
+  orderList = [];
 });
 
 async function fetchOrder() {
@@ -751,4 +748,40 @@ function logout() {
   localStorage.removeItem("USERLOGIN");
   document.querySelector(".btnLogout").style.display = "none";
   document.querySelector(".btnSignin").style.display = "block";
+}
+
+async function type() {
+  var response = await productServ
+    .fetchProduct()
+    .then((res) => {
+      const listProd = res.data;
+      for (let i = 0; i < listProd.length; i++) {
+        var prod = listProd[i];
+        let type = prod.type;
+
+        if (!arrType.includes(type)) {
+          arrType.push(type);
+        }
+      }
+      console.log(arrType);
+      var html = `<li style="cursor: pointer;" onclick="renderProduct()"><a class="dropdown-item" >All</a></li>`;
+      for (let i = 0; i < arrType.length; i++) {
+        html += `
+              <li style="cursor: pointer;" id="${arrType[i]}" onclick="renderProdFollowType(${arrType[i]})"><a class="dropdown-item" >${arrType[i]}</a></li>
+            `;
+      }
+      domId("dd-type").innerHTML = html;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function renderProdFollowType(el) {
+  console.log(el.id);
+  var newArrProdList = productList.filter((item) => {
+    return item.type === el.id;
+  });
+  renderProduct(newArrProdList);
+  console.log(newArrProdList);
 }
