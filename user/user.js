@@ -785,3 +785,18 @@ function renderProdFollowType(el) {
   renderProduct(newArrProdList);
   console.log(newArrProdList);
 }
+
+async function searchProduct() {
+  var inputValue = domId("inputSearch").value.replace(/\s/g, "").toLowerCase();
+  // var newArrPhone=[]
+  console.log(inputValue);
+  await productServ.fetchProduct().then(res=>{
+    const prodList = res.data;
+    var newArrPhone = prodList.filter((item)=>{
+      return item.name.replace(/\s/g, "").toLowerCase().includes(inputValue)
+    })
+   renderProduct(newArrPhone);
+  }).catch(err=>{
+    console.log(err);
+  })
+}
