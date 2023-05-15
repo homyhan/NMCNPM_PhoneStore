@@ -11,8 +11,7 @@ function profile() {
   const userInfo = getFromLocal("USERLOGIN");
 
   var profileUser = productServ.fetchProfile(userInfo.id).then((res) => {
-    // console.log(res.data);
-    // cart.push(res.data.cartList);
+    
     cart = [...res.data.cartList];
     var innerProf = `
       <p>Account: ${res.data.account}</p>
@@ -122,8 +121,7 @@ function addToCart(id) {
             var itemCurrent = currentCart.cartList[i];
             if (itemCurrent.product.id === id) {
               currentCart.cartList[i].quantity++;
-              isExist = true;
-              console.log("da ton tai");
+              isExist = true;              
             }
           }
           if (isExist == false) {
@@ -144,15 +142,12 @@ function addToCart(id) {
               currentCart
             )
             .then(async (response) => {
-              console.log(
-                "Giỏ hàng đã được cập nhật thành công:",
-                response.data
-              );
+              
               await profile();
               await productServ.fetchProfile(userInfo.id).then((res) => {
-                console.log("fetch thanh cong", res.data);
+                
               });
-              console.log("cart ne", cart);
+              
               renderCart();
             })
             .catch((error) => {
@@ -225,14 +220,13 @@ async function renderCart() {
             </tr>
             
       `;
-      // totalCheck += cart[i].total();
+      
     }
-    // console.log(total);
-    // domId("total").innerHTML = "Total: " + totalCheck;
+    
     domId("cartProduct").innerHTML = html;
-    console.log("ok");
+    
   } else {
-    console.log("not ok");
+    
     domId("cartProduct").innerHTML = `<tr>Vui long dang nhap</tr>`;
   }
 }
@@ -278,15 +272,12 @@ function changeAmount(id, number) {
               currentCart
             )
             .then(async (response) => {
-              console.log(
-                "Giỏ hàng đã được cập nhật thành công: (dang tang so luong)",
-                response.data
-              );
+              
               await profile();
               await productServ.fetchProfile(userInfo.id).then((res) => {
-                console.log("fetch thanh cong: tang so luong", res.data);
+                
               });
-              console.log("cart ne: tang thanh cong", cart);
+              
               renderCart();
             })
             .catch((error) => {
@@ -311,11 +302,9 @@ function changeAmount(id, number) {
       if (isExist == false) {
         cart.push(cartItem);
       }
-
-      console.log(cart);
-      // saveProductCartList();
+      
       renderCart();
-      // renderCheckout();
+      
     })
     .catch(function (err) {
       console.log(err);
@@ -343,7 +332,7 @@ function deleteProduct(id) {
               currentCart.cartList.splice(index, 1);
               var count = currentCart.cartList.length;
               domId("amount").innerHTML = count;
-              console.log(id);
+              
             }
           }
 
@@ -355,22 +344,19 @@ function deleteProduct(id) {
               currentCart
             )
             .then(async (response) => {
-              console.log("Giỏ hàng đã xoa mot san pham:", response.data);
+              
               await profile();
               await productServ.fetchProfile(userInfo.id).then((res) => {
-                console.log("fetch thanh cong: xoa san pham", res.data);
+                
               });
-              console.log("cart ne: xoa thanh cong", cart);
+              
               renderCart();
             })
             .catch((error) => {
               console.error("Lỗi khi cập nhật giỏ hàng:", error);
             });
         });
-
-      console.log(cart);
-      // renderCheckout();
-
+     
       renderCart();
     })
     .catch(function (err) {
@@ -392,14 +378,14 @@ function selectedItemCart(id) {
           return item.product.id === checkbox.id;
         });
         orderList.push(newArr[0]);
-        console.log(orderList);
+        
       } else {
         orderList = orderList.filter((item) => {
           return item.product.id * 1 !== checkbox.id * 1;
         });
-        console.log(orderList);
+        
       }
-      console.log(orderList);
+      
     })
     .catch((err) => {
       console.log(err);
@@ -470,11 +456,9 @@ function btnDathang() {
       );
       var infoOrder = {};
       infoOrder.orderItem = [...orderList];
-      infoOrder.state = false;
-      // var orderItem = [...orderList];
+      infoOrder.state = false;      
       currentCart.ordered.push(infoOrder);
-      currentCart.cartList = [...rs];
-      console.log(currentCart);
+      currentCart.cartList = [...rs];      
 
       axios
         .put(
@@ -489,9 +473,9 @@ function btnDathang() {
           contentCheckout.innerHTML = "";
           await profile();
           await productServ.fetchProfile(userInfo.id).then((res) => {
-            console.log("fetch thanh cong", res.data);
+            
           });
-          console.log("cart ne", cart);
+          
           fetchOrder();
           renderCart();
           domId("amount").innerHTML = cart.length;
@@ -515,8 +499,7 @@ function order() {
       .get("https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id)
       .then((response) => {
         const currentCart = response.data;
-
-        // console.log(currentCart);
+        
         var orderItem = [...orderList];
         currentCart.ordered.push(orderItem);
 
@@ -530,7 +513,7 @@ function order() {
             console.log("Giỏ hàng đã được cập nhật thành công:", response.data);
             await profile();
             await productServ.fetchProfile(userInfo.id).then((res) => {
-              console.log("fetch profile", res.data);
+              
             });
           })
           .catch((error) => {
@@ -570,12 +553,8 @@ window.onload = async function () {
   renderCart();
   // renderType();
   var count = cart.length;
-  domId("amount").innerHTML = count;
-  console.log("cart", cart);
-
-  await fetchOrder();
-  // console.log("productList", productList);
-  console.log("res acc", listAccSignin);
+  domId("amount").innerHTML = count;  
+  await fetchOrder();  
 
   await type();
 };
@@ -583,22 +562,19 @@ window.onload = async function () {
 // LẤY DỮ LIỆU TỪ LOCALHOST
 function getFromLocal(name) {
   var obj = localStorage.getItem(name);
-  if (!obj) return [];
-  // console.log(JSON.parse(productListJson));
+  if (!obj) return [];  
   return JSON.parse(obj);
 }
 
 function saveToLocal(el, name) {
-  var obj = JSON.stringify(el);
-  console.log(el);
+  var obj = JSON.stringify(el);  
   localStorage.setItem(name, obj);
 }
 
 function selectedProduct(id) {
   const selected = productServ
     .fetchProductDetail(id)
-    .then((res) => {
-      console.log(res.data);
+    .then((res) => {      
       const html = `
       <b>Name: </b><span>${res.data.name}</span> <br>
       <b>Price: </b><span>${formatCurrencyVND(res.data.price)}</span> <br>
@@ -625,19 +601,23 @@ async function signin(e) {
       email === listAccSignin[i].email &&
       pass === listAccSignin[i].password
     ) {
-      console.log(listAccSignin[i].email, listAccSignin[i].password);
-      console.log("signin thanh cong");
+      
       saveToLocal(listAccSignin[i], "USERLOGIN");
       document.querySelector(".btnLogout").style.display = "block";
       document.querySelector(".btnSignin").style.display = "none";
       await profile();
       await fetchOrder();
       await productServ.fetchProfile(listAccSignin[i].id).then((res) => {
-        console.log("fetch thanh cong", res.data);
+        
+        var count = res.data.cartList.length;
+      domId("amount").innerHTML = count;
       });
       renderCart();
+
+      
+
     } else {
-      console.log("loi dang nhap");
+      
     }
   }
 }
@@ -667,7 +647,7 @@ async function fetchOrder() {
   var listOrder = await productServ
     .fetchCart(userInfo.account)
     .then((res) => {
-      console.log("fetch for order", res.data[0].ordered);
+      
       const listOrdered = res.data[0].ordered;
       listOrdered.map((item, index) => {
         html += `
@@ -710,21 +690,16 @@ async function fetchOrder() {
 
 function cancelOrder(id) {
   const userInfo = getFromLocal("USERLOGIN");
-  console.log(id);
-
-  //     // Lấy thông tin giỏ hàng hiện tại từ API
+ 
   axios
     .get("https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id)
     .then((response) => {
-      const currentOrder = response.data;
-      console.log("huy order", currentOrder);
+      const currentOrder = response.data;      
 
       currentOrder.ordered = currentOrder.ordered.filter((item, index) => {
         return index !== id;
       });
-      console.log(currentOrder.ordered);
 
-      // // API bằng cách gửi yêu cầu PUT
       axios
         .put(
           "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id,
@@ -734,7 +709,7 @@ function cancelOrder(id) {
           console.log("Giỏ hàng đã xoa mot san pham:", response.data);
           await profile();
           await productServ.fetchProfile(userInfo.id).then((res) => {
-            console.log("fetch huy don hang: ", res.data);
+            
           });
           fetchOrder();
         })
@@ -746,6 +721,7 @@ function cancelOrder(id) {
 
 function logout() {
   localStorage.removeItem("USERLOGIN");
+  domId("amount").innerHTML = 0;
   document.querySelector(".btnLogout").style.display = "none";
   document.querySelector(".btnSignin").style.display = "block";
 }
@@ -763,7 +739,7 @@ async function type() {
           arrType.push(type);
         }
       }
-      console.log(arrType);
+      
       var html = `<li style="cursor: pointer;" onclick="renderProduct()"><a class="dropdown-item" >All</a></li>`;
       for (let i = 0; i < arrType.length; i++) {
         html += `
@@ -777,19 +753,15 @@ async function type() {
     });
 }
 
-function renderProdFollowType(el) {
-  console.log(el.id);
+function renderProdFollowType(el) {  
   var newArrProdList = productList.filter((item) => {
     return item.type === el.id;
   });
-  renderProduct(newArrProdList);
-  console.log(newArrProdList);
+  renderProduct(newArrProdList);  
 }
 
 async function searchProduct() {
   var inputValue = domId("inputSearch").value.replace(/\s/g, "").toLowerCase();
-  // var newArrPhone=[]
-  console.log(inputValue);
   await productServ.fetchProduct().then(res=>{
     const prodList = res.data;
     var newArrPhone = prodList.filter((item)=>{
