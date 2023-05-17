@@ -1,4 +1,5 @@
 var productList = [];
+var userList = [];
 function setListProducts(newList) {
     window.localStorage.setItem('ListProduct', JSON.stringify(newList));
 }
@@ -7,14 +8,17 @@ function getListProducts() {
     return JSON.parse(window.localStorage.getItem('ListProduct'));
 }
 
-window.onload = function () {
-    // get data từ localstorage
-    list_product = getListProducts() || list_product;
+function domId(id) {
+    return document.getElementById(id);
+}
 
+window.onload = async function () {
+    list_product = getListProducts() || list_product;
+    await fetchUserList();
     addEventChangeTab();
     addTableProducts();
-    openTab('Sản Phẩm')
-}
+    openTab("Sản Phẩm");
+};
 
 // ======================= Các Tab =========================
 function addEventChangeTab() {
@@ -50,8 +54,99 @@ function openTab(nameTab) {
     // mở tab
     switch(nameTab) {
         case 'Sản Phẩm': document.getElementsByClassName('sanpham')[0].style.display = 'block'; break;
+        case 'Người Dùng': document.getElementsByClassName('nguoidung')[0].style.display = 'block'; break;
     }
 }
+
+//========================== Người dùng ========================
+async function fetchUserList() {
+    userList = [];
+    try {
+        const response = await fetch('https://63e677b27eef5b223386ae8a.mockapi.io/signin/');
+        const users = await response.json();
+        const userList = mapUserList(users);
+        renderUser(userList);
+        console.log(users);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+function mapUserList(data) {
+    const userList = data.map(user => {
+        return {
+            id: user.id,
+            fullName: user.fullName,
+            account: user.account,
+            email: user.email,
+            password: user.password,
+            isAdmin: user.isAdmin,
+            address: user.address
+        };
+    });
+    return userList;
+}
+
+function renderUser(data) {
+    data = data || productList;
+
+    var tc = document
+        .getElementsByClassName("nguoidung")[0]
+        .getElementsByClassName("table-content")[0];
+    var s = `<table class="table-outline hideImg">`;
+
+    for (var i = 0; i < data.length; i++) {
+        s += `<tr>
+            <td style="width: 5%">${data[i].id}</td>
+            <td style="width: 15%">${data[i].fullName}</td>
+            <td style="width: 15%">${data[i].email}</td>
+            <td style="width: 10%">${data[i].account}</td>
+            <td style="width: 10%">${data[i].password}</td>
+            <td style="width: 10%">${data[i].isAdmin}</td>
+            <td style="width: 20%">${data[i].address}</td>
+            <td style="width: 10%">
+                <div class="tooltip">
+                    <i class="fa fa-wrench" onclick=""></i>
+                    <span class="tooltiptext">Sửa</span>
+                </div>
+                <div class="tooltip">
+                    <i class="fa fa-trash" onclick="xoaNguoiDung(${data[i].id}, '${data[i].fullName}')"></i>
+                    <span class="tooltiptext">Xóa</span>
+                </div>
+            </td>
+        </tr>`;
+    }
+    s += `</table>`;
+    tc.innerHTML = s;
+}
+
+async function xoaNguoiDung(id, name) {
+    try {
+        // Hiển thị hộp thoại xác nhận xóa sản phẩm
+        if (window.confirm('Bạn có chắc muốn xóa ' + name)) {
+            // Gửi yêu cầu xóa người dùng tới API mock
+            const response = await axios.delete(`https://63e677b27eef5b223386ae8a.mockapi.io/signin/${id}`);
+            console.log(response.data);
+            // Sau khi xóa thành công, cập nhật lại danh sách người dùng
+            await fetchUserList();
+            // Hiển thị thông báo xóa nguoi dùng thành công
+            alert(`Đã xóa người dùng ${name} thành công.`);
+        }
+    } catch (error) {
+        // Nếu có lỗi xảy ra, hiển thị thông báo lỗi trên console
+        console.error(error);
+    }
+}
+
+domId('btnCloseUser').addEventListener('click', function(){
+    domId('khungThemNguoiDung').style.transform = "scale(0)";
+    domId('form').reset();
+    var arrError = document.getElementsByClassName("sp-error");
+    for (let i = 0; i < arrError.length; i++) {
+        arrError[i].innerHTML="";
+
+    }
+})
 
 // ========================== Sản Phẩm ========================
 // Vẽ bảng danh sách sản phẩm
