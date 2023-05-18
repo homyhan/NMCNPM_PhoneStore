@@ -425,15 +425,10 @@ function btnOrder() {
           
           
     `;
-
-    // totalCheck += cart[i].total();
+    
   }
 
-  // html += `
-  //         <tr style="font-size: 28px">
-  //               Tổng hóa đơn:
-  //         </tr>
-  //   `;
+  
   domId("tongHoaDon").innerHTML = `Tổng hóa đơn: ${formatCurrencyVND(total)}`;
   domId("contentCheckout").innerHTML = html;
 }
@@ -601,7 +596,9 @@ async function signin(e) {
       email === listAccSignin[i].email &&
       pass === listAccSignin[i].password
     ) {
-      
+      if(listAccSignin[i].isAdmin){
+        document.querySelector('.hrefAdmin').style.display="block";
+      }
       saveToLocal(listAccSignin[i], "USERLOGIN");
       document.querySelector(".btnLogout").style.display = "block";
       document.querySelector(".btnSignin").style.display = "none";
