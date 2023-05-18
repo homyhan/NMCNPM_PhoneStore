@@ -66,9 +66,6 @@ function mapProductList(local) {
 function renderProduct(data) {
   data = data || productList;
 
-  // var tc = document
-  //   .getElementsByClassName("sanpham")[0]
-  //   .getElementsByClassName("table-content")[0];
   var row = domId("rowRender");
   var s = "";
 
@@ -542,6 +539,7 @@ async function fetchAccSigninList() {
 //khi vừa vào trang -> call api để render product
 window.onload = async function () {
   const userInfo = getFromLocal("USERLOGIN");
+  console.log(userInfo);
   if (userInfo) {
     document.querySelector(".btnLogout").style.display = "block";
     document.querySelector(".btnSignin").style.display = "none";
@@ -596,6 +594,8 @@ async function signin(e) {
   e.preventDefault();
   var email = domId("emailSignin").value;
   var pass = domId("passSignin").value;
+  var temp = false;
+      var arrNotiErr = [];
   for (let i = 0; i < listAccSignin.length; i++) {
     if (
       email === listAccSignin[i].email &&
@@ -608,18 +608,30 @@ async function signin(e) {
       await profile();
       await fetchOrder();
       await productServ.fetchProfile(listAccSignin[i].id).then((res) => {
-        
+        alert("Đăng nhập thành công");
         var count = res.data.cartList.length;
       domId("amount").innerHTML = count;
+      return domId("btnSubmitSigin").setAttribute('data-bs-dismiss', 'modal')
       });
       renderCart();
 
-      
-
-    } else {
+    } else {      
+      arrNotiErr.push(temp);      
+    }
+    
+  }
+  if(arrNotiErr.length === listAccSignin.length){
+    console.log(arrNotiErr);
+    if (arrNotiErr.every(function(notification) {
+      return notification === false;
+    })) {
+      console.log("Lỗi thông tin. Vui lòng nhập lại");
       
     }
+  }else{
+    console.log("ok");
   }
+  
 }
 
 function formatCurrencyVND(number) {
