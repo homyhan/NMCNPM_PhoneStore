@@ -64,9 +64,8 @@ async function fetchUserList() {
     try {
         const response = await fetch('https://63e677b27eef5b223386ae8a.mockapi.io/signin/');
         const users = await response.json();
-        const userList = mapUserList(users);
+        userList = mapUserList(users);
         renderUser(userList);
-        console.log(users);
     } catch (error) {
         console.log(error);
     }
@@ -81,14 +80,16 @@ function mapUserList(data) {
             email: user.email,
             password: user.password,
             isAdmin: user.isAdmin,
-            address: user.address
+            address: user.address,
+            ordered: user.ordered,
+            cartList: user.cartList
         };
     });
     return userList;
 }
 
 function renderUser(data) {
-    data = data || productList;
+    data = data || userList;
 
     var tc = document
         .getElementsByClassName("nguoidung")[0]
@@ -106,7 +107,7 @@ function renderUser(data) {
             <td style="width: 20%">${data[i].address}</td>
             <td style="width: 10%">
                 <div class="tooltip">
-                    <i class="fa fa-wrench" onclick=""></i>
+                    <i class="fa fa-wrench" onclick="addKhungSuaNguoiDung(${data[i].id})"></i>
                     <span class="tooltiptext">Sửa</span>
                 </div>
                 <div class="tooltip">
@@ -119,6 +120,55 @@ function renderUser(data) {
     s += `</table>`;
     tc.innerHTML = s;
 }
+
+domId("btnSubmitUser").addEventListener('click', async function(e) {
+    e.preventDefault();
+    var fullName = domId("fullName").value.trim();
+    var email = domId("email").value.trim();
+    var account = domId("account").value.trim();
+    var password = domId("password").value.trim();
+    var type = domId("admin").value;
+    var address = document.querySelector("#khungThemNguoiDung textarea").value.trim();
+
+    if (fullName === "" || email === "" || account === "" || password === "" || type === "0" || address === "") {
+        alert("Vui lòng điền đầy đủ thông tin");
+        return;
+    }
+
+    if (type === "1") {
+        type = "true";
+    } else if (type === "2") {
+        type = "false";
+    }
+
+    try {
+        var nguoiDungMoi = {
+            fullName: fullName,
+            email: email,
+            account: account,
+            password: password,
+            isAdmin: type,
+            address: address,
+            ordered: [],
+            cartList: []
+        };
+        // Gọi API để thêm người dùng
+        axios.post("https://63e677b27eef5b223386ae8a.mockapi.io/signin", nguoiDungMoi)
+            .then(async function (response) {
+                console.log(response.data);
+                // Thực hiện các thao tác khác sau khi thêm người dùng thành công
+                await fetchUserList();
+                await alert("Thêm người dùng thành công.");
+                document.getElementById("khungThemNguoiDung").style.transform = "scale(0)";
+            })
+            .catch(function(error) {
+                console.error(error);
+            });
+        } catch (e) {
+            alert("Lỗi: " + e.toString());
+        }
+});
+
 
 async function xoaNguoiDung(id, name) {
     try {
@@ -147,6 +197,137 @@ domId('btnCloseUser').addEventListener('click', function(){
 
     }
 })
+
+function addKhungSuaNguoiDung(id) {
+    var nguoiDung;
+    for (var user of userList) {
+        if (user.id == id) {
+            nguoiDung = user;
+            break;
+        }
+    }
+    var s = `<span class="close" onclick="this.parentElement.style.transform = 'scale(0)';">&times;</span>
+    <table class="overlayTable table-outline table-content table-header">
+      <tr>
+        <th colspan="2">` + nguoiDung.fullName + `</th>
+      </tr>
+      <tr>
+        <td>Họ và Tên:</td>
+        <td><input type="text" value="` + nguoiDung.fullName + `"></td>
+      </tr>
+      <tr>
+        <td>Email:</td>
+        <td><input type="text" value="` + nguoiDung.email + `"></td>
+      </tr>
+      <tr>
+        <td>Tài Khoản:</td>
+        <td><input type="text" value="` + nguoiDung.account + `"></td>
+      </tr>
+      <tr>
+        <td>Mật Khẩu:</td>
+        <td><input type="text" value="` + nguoiDung.password + `"></td>
+      </tr>
+      <tr>
+        <td>Admin:</td>
+        <td>
+          <select id="admin" class="form-select form-control" onblur="requiredType()" aria-label="Default select example">
+              <option value="" selected>Type</option>
+              <option value="1" ${nguoiDung.isAdmin ? 'selected' : ''}>true</option>
+              <option value="2" ${!nguoiDung.isAdmin ? 'selected' : ''}>false</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Địa Chỉ:</td>
+        <td><textarea rows="6">` + nguoiDung.address + `</textarea></td>
+      </tr>
+      <tr>
+        <td colspan="2" class="table-footer">
+          <button onclick="capNhatNguoiDung('` + nguoiDung.id + `')">SỬA</button>
+        </td>
+      </tr>
+    </table>`;
+
+    var k = document.getElementById('khungSuaNguoiDung');
+    k.innerHTML = s;
+    k.style.transform = 'scale(1)';
+}
+function layThongTinNguoiDungTuTable() {
+    var khung = document.getElementById("khungSuaNguoiDung");
+    var tr = khung.getElementsByTagName("tr");
+
+    var hoTen = tr[1]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+    var email = tr[2]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+    var taiKhoan = tr[3]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+    var matKhau = tr[4]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+    var admin = tr[5]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("select")[0].value;
+    var diaChi = tr[6]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("textarea")[0].value;
+
+    try {
+        return {
+            "fullName": hoTen,
+            "email": email,
+            "account": taiKhoan,
+            "password": matKhau,
+            "isAdmin": admin,
+            "address": diaChi
+        };
+    } catch (e) {
+        alert('Lỗi: ' + e.toString());
+        return false;
+    }
+}
+
+async function capNhatNguoiDung(id) {
+    // Lấy thông tin người dùng cần cập nhật từ form
+    var nguoiDungCapNhat = layThongTinNguoiDungTuTable("khungSuaNguoiDung");
+    if (!nguoiDungCapNhat) return;
+
+    // Kiểm tra người dùng có tồn tại trong danh sách người dùng hay không
+    var nguoiDungCu = userList.find(nguoiDung => nguoiDung.id === id);
+    if (!nguoiDungCu) {
+        alert("Không tìm thấy người dùng cần cập nhật.");
+        return false;
+    }
+
+    // Cập nhật thông tin người dùng mới
+    var nguoiDungMoi = {
+        ...nguoiDungCu,
+        fullName: nguoiDungCapNhat.fullName,
+        email: nguoiDungCapNhat.email,
+        account: nguoiDungCapNhat.account,
+        password: nguoiDungCapNhat.password,
+        isAdmin: nguoiDungCapNhat.isAdmin,
+        address: nguoiDungCapNhat.address,
+        ordered: nguoiDungCu.ordered,
+        cartList: nguoiDungCu.cartList
+    };
+// console.log(nguoiDungMoi)
+    // Gọi API để cập nhật người dùng
+    try {
+        const response = await axios.put(`https://63e677b27eef5b223386ae8a.mockapi.io/signin/${id}`, nguoiDungMoi);
+        console.log(response.data);
+        await fetchUserList();
+        alert(`Đã cập nhật người dùng có id là ${id} thành công.`);
+        document.getElementById("khungSuaNguoiDung").style.transform = "scale(0)";
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
 
 // ========================== Sản Phẩm ========================
 // Vẽ bảng danh sách sản phẩm
