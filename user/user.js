@@ -540,6 +540,10 @@ window.onload = async function () {
     document.querySelector(".btnSignin").style.display = "none";
   }
 
+  if(userInfo.isAdmin){
+    document.querySelector('.hrefAdmin').style.display="block";
+  }
+
   await profile();
   await fetchProductList();
   await fetchAccSigninList();
