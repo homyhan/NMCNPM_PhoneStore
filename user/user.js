@@ -785,3 +785,68 @@ async function searchProduct() {
     console.log(err);
   })
 }
+
+async function signup(event) {
+  event.preventDefault();
+
+  var fullName = domId("fullNameSignup").value.trim();
+  var account = domId("accountSignup").value.trim();
+  var email = domId("emailSignup").value.trim();
+  var password = domId("passwordSignup").value.trim();
+  var confirmPassword = domId("confirmPasswordSignup").value.trim();
+  var address = domId("addressSignup").value.trim();
+
+  // Kiểm tra thông tin đã được nhập đầy đủ
+  if (fullName === "" || account == "" || email === "" || password === "" || confirmPassword === "" || address === "") {
+    alert("Vui lòng điền đầy đủ thông tin.");
+    return;
+  }
+
+  // Kiểm tra mật khẩu và xác nhận mật khẩu khớp nhau
+  if (password !== confirmPassword) {
+    alert("Mật khẩu và xác nhận mật khẩu không khớp.");
+    return;
+  }
+
+  try {
+    const response = await axios.get(`https://63e677b27eef5b223386ae8a.mockapi.io/signin?email=${email}`);
+    const userList = response.data;
+    const existingUser = userList.find(user => user.email === email);
+    if (existingUser) {
+      alert("Email đã tồn tại. Vui lòng sử dụng email khác.");
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+    return;
+  }
+
+  // Tạo đối tượng user từ thông tin người dùng
+  var user = {
+    fullName: fullName,
+    account: account,
+    email: email,
+    password: password,
+    isAdmin: false,
+    address: address,
+    ordered: [],
+    cartList: []
+  };
+
+  // Gọi API để tạo người dùng mới
+  axios
+      .post("https://63e677b27eef5b223386ae8a.mockapi.io/signin/", user)
+      .then(function(response) {
+        console.log(response.data);
+        alert("Đăng ký thành công.");
+        // Xử lý sau khi đăng ký thành công, ví dụ: chuyển hướng đến trang đăng nhập
+        domId("modalSignup").classList.remove("show");
+        domId("modalSignup").style.display = "none";
+        document.querySelector("body").classList.remove("modal-open");
+        document.querySelector(".modal-backdrop").remove();
+      })
+      .catch(function(error) {
+        console.error(error);
+        alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      });
+}
