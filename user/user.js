@@ -11,7 +11,6 @@ function profile() {
   const userInfo = getFromLocal("USERLOGIN");
 
   var profileUser = productServ.fetchProfile(userInfo.id).then((res) => {
-    
     cart = [...res.data.cartList];
     var innerProf = `
       <p>Account: ${res.data.account}</p>
@@ -79,7 +78,7 @@ function renderProduct(data) {
             )}</span></p>
             <div class="electronic_img"><img src="${data[i].image}"></div>
             <div class="btn_main">
-                <button class="buy_bt" onclick="addToCart('${
+                <button class="buy_bt btnAddToCart" onclick="addToCart('${
                   data[i].id
                 }')">add to cart</button>
                 <button type="button" onclick="selectedProduct('${
@@ -98,71 +97,72 @@ function renderProduct(data) {
 
 function addToCart(id) {
   var userInfo = getFromLocal("USERLOGIN");
-  productServ
-    .fetchProductDetail(id) //lay thong tin 1 sp tu db
-    .then(function (res) {
-      var product = res.data;
-      var quantity = 1;
-      var cartItem = new CartItem(product, quantity);
-      var isExist = false;
+  if (userInfo.length !== 0) {
+    productServ
+      .fetchProductDetail(id) //lay thong tin 1 sp tu db
+      .then(function (res) {
+        var product = res.data;
+        var quantity = 1;
+        var cartItem = new CartItem(product, quantity);
+        var isExist = false;
 
-      // Lấy thông tin giỏ hàng hiện tại từ API
-      axios
-        .get(
-          "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id
-        )
-        .then((response) => {
-          const currentCart = response.data;
+        // Lấy thông tin giỏ hàng hiện tại từ API
+        axios
+          .get(
+            "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id
+          )
+          .then((response) => {
+            const currentCart = response.data;
 
-          for (var i = 0; i < currentCart.cartList.length; i++) {
-            var itemCurrent = currentCart.cartList[i];
-            if (itemCurrent.product.id === id) {
-              currentCart.cartList[i].quantity++;
-              isExist = true;              
+            for (var i = 0; i < currentCart.cartList.length; i++) {
+              var itemCurrent = currentCart.cartList[i];
+              if (itemCurrent.product.id === id) {
+                currentCart.cartList[i].quantity++;
+                isExist = true;
+              }
             }
-          }
-          if (isExist == false) {
-            console.log("them thanh cong");
-            currentCart.cartList.push(cartItem);
-            var count = currentCart.cartList.length;
-            domId("amount").innerHTML = count;
-          }
+            if (isExist == false) {
+              console.log("them thanh cong");
+              currentCart.cartList.push(cartItem);
+              var count = currentCart.cartList.length;
+              domId("amount").innerHTML = count;
+            }
 
-          // Thêm sản phẩm mới vào giỏ hàng hiện tại
-          // currentCart.cartList.push(cartItem);
+            // Thêm sản phẩm mới vào giỏ hàng hiện tại
+            // currentCart.cartList.push(cartItem);
 
-          // API bằng cách gửi yêu cầu PUT
-          axios
-            .put(
-              "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" +
-                userInfo.id,
-              currentCart
-            )
-            .then(async (response) => {
-              
-              await profile();
-              await productServ.fetchProfile(userInfo.id).then((res) => {
-                
+            // API bằng cách gửi yêu cầu PUT
+            axios
+              .put(
+                "https://63e677b27eef5b223386ae8a.mockapi.io/signin/" +
+                  userInfo.id,
+                currentCart
+              )
+              .then(async (response) => {
+                await profile();
+                await productServ.fetchProfile(userInfo.id).then((res) => {});
+
+                renderCart();
+              })
+              .catch((error) => {
+                console.error("Lỗi khi cập nhật giỏ hàng:", error);
               });
-              
-              renderCart();
-            })
-            .catch((error) => {
-              console.error("Lỗi khi cập nhật giỏ hàng:", error);
-            });
-        })
-        .catch((error) => {
-          console.log("loi", error);
-        });
-      // saveProductCartList();
+          })
+          .catch((error) => {
+            console.log("loi", error);
+          });
+        // saveProductCartList();
 
-      var count = cart.length;
-      // domId("amount").innerHTML = count;
-      // renderCheckout();
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
+        var count = cart.length;
+        // domId("amount").innerHTML = count;
+        // renderCheckout();
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+  } else {
+    alert("Vui lòng đăng nhập");
+  }
 }
 
 async function renderCart() {
@@ -217,13 +217,10 @@ async function renderCart() {
             </tr>
             
       `;
-      
     }
-    
+
     domId("cartProduct").innerHTML = html;
-    
   } else {
-    
     domId("cartProduct").innerHTML = `<tr>Vui long dang nhap</tr>`;
   }
 }
@@ -269,12 +266,9 @@ function changeAmount(id, number) {
               currentCart
             )
             .then(async (response) => {
-              
               await profile();
-              await productServ.fetchProfile(userInfo.id).then((res) => {
-                
-              });
-              
+              await productServ.fetchProfile(userInfo.id).then((res) => {});
+
               renderCart();
             })
             .catch((error) => {
@@ -299,9 +293,8 @@ function changeAmount(id, number) {
       if (isExist == false) {
         cart.push(cartItem);
       }
-      
+
       renderCart();
-      
     })
     .catch(function (err) {
       console.log(err);
@@ -329,7 +322,6 @@ function deleteProduct(id) {
               currentCart.cartList.splice(index, 1);
               var count = currentCart.cartList.length;
               domId("amount").innerHTML = count;
-              
             }
           }
 
@@ -341,19 +333,16 @@ function deleteProduct(id) {
               currentCart
             )
             .then(async (response) => {
-              
               await profile();
-              await productServ.fetchProfile(userInfo.id).then((res) => {
-                
-              });
-              
+              await productServ.fetchProfile(userInfo.id).then((res) => {});
+
               renderCart();
             })
             .catch((error) => {
               console.error("Lỗi khi cập nhật giỏ hàng:", error);
             });
         });
-     
+
       renderCart();
     })
     .catch(function (err) {
@@ -375,14 +364,11 @@ function selectedItemCart(id) {
           return item.product.id === checkbox.id;
         });
         orderList.push(newArr[0]);
-        
       } else {
         orderList = orderList.filter((item) => {
           return item.product.id * 1 !== checkbox.id * 1;
         });
-        
       }
-      
     })
     .catch((err) => {
       console.log(err);
@@ -425,10 +411,8 @@ function btnOrder() {
           
           
     `;
-    
   }
 
-  
   domId("tongHoaDon").innerHTML = `Tổng hóa đơn: ${formatCurrencyVND(total)}`;
   domId("contentCheckout").innerHTML = html;
 }
@@ -448,9 +432,9 @@ function btnDathang() {
       );
       var infoOrder = {};
       infoOrder.orderItem = [...orderList];
-      infoOrder.state = false;      
+      infoOrder.state = false;
       currentCart.ordered.push(infoOrder);
-      currentCart.cartList = [...rs];      
+      currentCart.cartList = [...rs];
 
       axios
         .put(
@@ -464,10 +448,8 @@ function btnDathang() {
           var contentCheckout = document.getElementById("contentCheckout");
           contentCheckout.innerHTML = "";
           await profile();
-          await productServ.fetchProfile(userInfo.id).then((res) => {
-            
-          });
-          
+          await productServ.fetchProfile(userInfo.id).then((res) => {});
+
           fetchOrder();
           renderCart();
           domId("amount").innerHTML = cart.length;
@@ -491,7 +473,7 @@ function order() {
       .get("https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id)
       .then((response) => {
         const currentCart = response.data;
-        
+
         var orderItem = [...orderList];
         currentCart.ordered.push(orderItem);
 
@@ -504,9 +486,7 @@ function order() {
           .then(async (response) => {
             console.log("Giỏ hàng đã được cập nhật thành công:", response.data);
             await profile();
-            await productServ.fetchProfile(userInfo.id).then((res) => {
-              
-            });
+            await productServ.fetchProfile(userInfo.id).then((res) => {});
           })
           .catch((error) => {
             console.error("Lỗi khi cập nhật giỏ hàng:", error);
@@ -535,10 +515,13 @@ async function fetchAccSigninList() {
 window.onload = async function () {
   const userInfo = getFromLocal("USERLOGIN");
   console.log(userInfo);
-  if (userInfo) {
+  if (userInfo.length !== 0) {
     document.querySelector(".btnLogout").style.display = "block";
     document.querySelector(".btnSignin").style.display = "none";
-  }
+  } else {
+    document.querySelector(".btnLogout").style.display = "none";
+    document.querySelector(".btnSignin").style.display = "block";
+  }  
 
   await profile();
   await fetchProductList();
@@ -546,28 +529,43 @@ window.onload = async function () {
   renderCart();
   // renderType();
   var count = cart.length;
-  domId("amount").innerHTML = count;  
-  await fetchOrder();  
+  domId("amount").innerHTML = count;
+  await fetchOrder();
 
   await type();
+
+  if (userInfo.isAdmin) {
+    document.querySelector(".hrefAdmin").style.display = "block";
+    const listBtnAddToCart = document.querySelectorAll('.btnAddToCart');
+    console.log("list", listBtnAddToCart);
+    for (let i = 0; i < listBtnAddToCart.length; i++) {
+      listBtnAddToCart[i].style.display = "none";
+    }
+  } else {
+    document.querySelector(".hrefAdmin").style.display = "none";
+    var listBtnAddToCart = document.querySelectorAll(".buy_bt");
+    for (let i = 0; i < listBtnAddToCart.length; i++) {
+      listBtnAddToCart[i].style.display = "block";
+    }
+  }
 };
 
 // LẤY DỮ LIỆU TỪ LOCALHOST
 function getFromLocal(name) {
   var obj = localStorage.getItem(name);
-  if (!obj) return [];  
+  if (!obj) return [];
   return JSON.parse(obj);
 }
 
 function saveToLocal(el, name) {
-  var obj = JSON.stringify(el);  
+  var obj = JSON.stringify(el);
   localStorage.setItem(name, obj);
 }
 
 function selectedProduct(id) {
   const selected = productServ
     .fetchProductDetail(id)
-    .then((res) => {      
+    .then((res) => {
       const html = `
       <b>Name: </b><span>${res.data.name}</span> <br>
       <b>Price: </b><span>${formatCurrencyVND(res.data.price)}</span> <br>
@@ -590,14 +588,24 @@ async function signin(e) {
   var email = domId("emailSignin").value;
   var pass = domId("passSignin").value;
   var temp = false;
-      var arrNotiErr = [];
+  var arrNotiErr = [];
   for (let i = 0; i < listAccSignin.length; i++) {
     if (
       email === listAccSignin[i].email &&
       pass === listAccSignin[i].password
     ) {
-      if(listAccSignin[i].isAdmin){
-        document.querySelector('.hrefAdmin').style.display="block";
+      if (listAccSignin[i].isAdmin) {
+        document.querySelector(".hrefAdmin").style.display = "block";
+        var listBtnAddToCart = document.querySelectorAll(".buy_bt");
+        for (let i = 0; i < listBtnAddToCart.length; i++) {
+          listBtnAddToCart[i].style.display = "none";
+        }
+      } else {
+        document.querySelector(".hrefAdmin").style.display = "none";
+        var listBtnAddToCart = document.querySelectorAll(".buy_bt");
+        for (let i = 0; i < listBtnAddToCart.length; i++) {
+          listBtnAddToCart[i].style.display = "block";
+        }
       }
       saveToLocal(listAccSignin[i], "USERLOGIN");
       document.querySelector(".btnLogout").style.display = "block";
@@ -607,28 +615,26 @@ async function signin(e) {
       await productServ.fetchProfile(listAccSignin[i].id).then((res) => {
         alert("Đăng nhập thành công");
         var count = res.data.cartList.length;
-      domId("amount").innerHTML = count;
-      return domId("btnSubmitSigin").setAttribute('data-bs-dismiss', 'modal')
+        domId("amount").innerHTML = count;
+        return domId("btnSubmitSigin").setAttribute("data-bs-dismiss", "modal");
       });
       renderCart();
-
-    } else {      
-      arrNotiErr.push(temp);      
+    } else {
+      arrNotiErr.push(temp);
     }
-    
   }
-  if(arrNotiErr.length === listAccSignin.length){
+  if (arrNotiErr.length === listAccSignin.length) {
     console.log(arrNotiErr);
-    if (arrNotiErr.every(function(notification) {
-      return notification === false;
-    })) {
+    if (
+      arrNotiErr.every(function (notification) {
+        return notification === false;
+      })
+    ) {
       console.log("Lỗi thông tin. Vui lòng nhập lại");
-      
     }
-  }else{
+  } else {
     console.log("ok");
   }
-  
 }
 
 function formatCurrencyVND(number) {
@@ -656,7 +662,6 @@ async function fetchOrder() {
   var listOrder = await productServ
     .fetchCart(userInfo.account)
     .then((res) => {
-      
       const listOrdered = res.data[0].ordered;
       listOrdered.map((item, index) => {
         html += `
@@ -699,11 +704,11 @@ async function fetchOrder() {
 
 function cancelOrder(id) {
   const userInfo = getFromLocal("USERLOGIN");
- 
+
   axios
     .get("https://63e677b27eef5b223386ae8a.mockapi.io/signin/" + userInfo.id)
     .then((response) => {
-      const currentOrder = response.data;      
+      const currentOrder = response.data;
 
       currentOrder.ordered = currentOrder.ordered.filter((item, index) => {
         return index !== id;
@@ -717,9 +722,7 @@ function cancelOrder(id) {
         .then(async (response) => {
           console.log("Giỏ hàng đã xoa mot san pham:", response.data);
           await profile();
-          await productServ.fetchProfile(userInfo.id).then((res) => {
-            
-          });
+          await productServ.fetchProfile(userInfo.id).then((res) => {});
           fetchOrder();
         })
         .catch((error) => {
@@ -748,7 +751,7 @@ async function type() {
           arrType.push(type);
         }
       }
-      
+
       var html = `<li style="cursor: pointer;" onclick="renderProduct()"><a class="dropdown-item" >All</a></li>`;
       for (let i = 0; i < arrType.length; i++) {
         html += `
@@ -762,24 +765,27 @@ async function type() {
     });
 }
 
-function renderProdFollowType(el) {  
+function renderProdFollowType(el) {
   var newArrProdList = productList.filter((item) => {
     return item.type === el.id;
   });
-  renderProduct(newArrProdList);  
+  renderProduct(newArrProdList);
 }
 
 async function searchProduct() {
   var inputValue = domId("inputSearch").value.replace(/\s/g, "").toLowerCase();
-  await productServ.fetchProduct().then(res=>{
-    const prodList = res.data;
-    var newArrPhone = prodList.filter((item)=>{
-      return item.name.replace(/\s/g, "").toLowerCase().includes(inputValue)
+  await productServ
+    .fetchProduct()
+    .then((res) => {
+      const prodList = res.data;
+      var newArrPhone = prodList.filter((item) => {
+        return item.name.replace(/\s/g, "").toLowerCase().includes(inputValue);
+      });
+      renderProduct(newArrPhone);
     })
-   renderProduct(newArrPhone);
-  }).catch(err=>{
-    console.log(err);
-  })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 async function signup(event) {
@@ -793,7 +799,14 @@ async function signup(event) {
   var address = domId("addressSignup").value.trim();
 
   // Kiểm tra thông tin đã được nhập đầy đủ
-  if (fullName === "" || account == "" || email === "" || password === "" || confirmPassword === "" || address === "") {
+  if (
+    fullName === "" ||
+    account == "" ||
+    email === "" ||
+    password === "" ||
+    confirmPassword === "" ||
+    address === ""
+  ) {
     alert("Vui lòng điền đầy đủ thông tin.");
     return;
   }
@@ -805,9 +818,11 @@ async function signup(event) {
   }
 
   try {
-    const response = await axios.get(`https://63e677b27eef5b223386ae8a.mockapi.io/signin?email=${email}`);
+    const response = await axios.get(
+      `https://63e677b27eef5b223386ae8a.mockapi.io/signin?email=${email}`
+    );
     const userList = response.data;
-    const existingUser = userList.find(user => user.email === email);
+    const existingUser = userList.find((user) => user.email === email);
     if (existingUser) {
       alert("Email đã tồn tại. Vui lòng sử dụng email khác.");
       return;
@@ -826,23 +841,23 @@ async function signup(event) {
     isAdmin: false,
     address: address,
     ordered: [],
-    cartList: []
+    cartList: [],
   };
 
   // Gọi API để tạo người dùng mới
   axios
-      .post("https://63e677b27eef5b223386ae8a.mockapi.io/signin/", user)
-      .then(function(response) {
-        console.log(response.data);
-        alert("Đăng ký thành công.");
-        // Xử lý sau khi đăng ký thành công, ví dụ: chuyển hướng đến trang đăng nhập
-        domId("modalSignup").classList.remove("show");
-        domId("modalSignup").style.display = "none";
-        document.querySelector("body").classList.remove("modal-open");
-        document.querySelector(".modal-backdrop").remove();
-      })
-      .catch(function(error) {
-        console.error(error);
-        alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
-      });
+    .post("https://63e677b27eef5b223386ae8a.mockapi.io/signin/", user)
+    .then(function (response) {
+      console.log(response.data);
+      alert("Đăng ký thành công.");
+      // Xử lý sau khi đăng ký thành công, ví dụ: chuyển hướng đến trang đăng nhập
+      domId("modalSignup").classList.remove("show");
+      domId("modalSignup").style.display = "none";
+      document.querySelector("body").classList.remove("modal-open");
+      document.querySelector(".modal-backdrop").remove();
+    })
+    .catch(function (error) {
+      console.error(error);
+      alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+    });
 }

@@ -40,3 +40,7 @@ html, body{
 .hrefAdmin{
     display: none;
 }
+
+.buy_bt{
+    display: block;
+}
