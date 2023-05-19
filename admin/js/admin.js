@@ -327,6 +327,24 @@ async function capNhatNguoiDung(id) {
     }
 }
 
+function timKiemNguoiDung(input) {
+    var kieuTim = document.getElementsByName('kieuTimKhachHang')[0].value;
+    var text = input.value;
+
+    // Lọc
+    var vitriKieuTim = {'ten':1, 'email':2, 'taikhoan':3};
+
+    var listTr_table = document.getElementsByClassName('nguoidung')[0].getElementsByClassName('table-content')[0].getElementsByTagName('tr');
+    for (var tr of listTr_table) {
+        var td = tr.getElementsByTagName('td')[vitriKieuTim[kieuTim]].innerHTML.toLowerCase();
+
+        if (td.indexOf(text.toLowerCase()) < 0) {
+            tr.style.display = 'none';
+        } else {
+            tr.style.display = '';
+        }
+    }
+}
 
 
 // ========================== Sản Phẩm ========================
