@@ -732,10 +732,17 @@ function cancelOrder(id) {
 }
 
 function logout() {
+
   localStorage.removeItem("USERLOGIN");
   domId("amount").innerHTML = 0;
   document.querySelector(".btnLogout").style.display = "none";
   document.querySelector(".btnSignin").style.display = "block";
+  document.querySelector(".hrefAdmin").style.display = "none";
+  var listBtnAddToCart = document.querySelectorAll('.buy_bt');
+        for (let i = 0; i < listBtnAddToCart.length; i++) {
+          listBtnAddToCart[i].style.display = "block"
+          
+        }
 }
 
 async function type() {
