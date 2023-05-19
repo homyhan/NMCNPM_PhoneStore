@@ -613,6 +613,25 @@ function getValueOfTypeInTable_SanPham(tr, loai) {
     return false;
 }
 
+function sortUserTable(loai) {
+    var list = document.getElementsByClassName('nguoidung')[0].getElementsByClassName("table-content")[0];
+    var tr = list.getElementsByTagName('tr');
+
+    quickSort(tr, 0, tr.length-1, loai, getValueOfTypeInTable_User);
+    decrease = !decrease;
+}
+
+function getValueOfTypeInTable_User(tr, loai) {
+    var td = tr.getElementsByTagName('td');
+    switch(loai) {
+        case 'stt': return Number(td[0].innerHTML);
+        case 'hoten' : return td[1].innerHTML.toLowerCase();
+        case 'email' : return td[2].innerHTML.toLowerCase();
+        case 'taikhoan' : return td[3].innerHTML.toLowerCase();
+    }
+    return false;
+}
+
 // ================== Sort ====================
 var decrease = true; // Sắp xếp giảm dần
 
