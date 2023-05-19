@@ -114,6 +114,7 @@ function renderUser(data) {
                     <i class="fa fa-trash" onclick="xoaNguoiDung(${data[i].id}, '${data[i].fullName}')"></i>
                     <span class="tooltiptext">Xóa</span>
                 </div>
+                
             </td>
         </tr>`;
     }
@@ -139,6 +140,19 @@ domId("btnSubmitUser").addEventListener('click', async function(e) {
         type = "true";
     } else if (type === "2") {
         type = "false";
+    }
+
+    try {
+        const response = await axios.get(`https://63e677b27eef5b223386ae8a.mockapi.io/signin?email=${email}`);
+        const userList = response.data;
+        const existingUser = userList.find(user => user.email === email);
+        if (existingUser) {
+            alert("Email đã tồn tại. Vui lòng sử dụng email khác.");
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+        return;
     }
 
     try {
@@ -314,7 +328,7 @@ async function capNhatNguoiDung(id) {
         ordered: nguoiDungCu.ordered,
         cartList: nguoiDungCu.cartList
     };
-// console.log(nguoiDungMoi)
+
     // Gọi API để cập nhật người dùng
     try {
         const response = await axios.put(`https://63e677b27eef5b223386ae8a.mockapi.io/signin/${id}`, nguoiDungMoi);
@@ -346,6 +360,24 @@ function timKiemNguoiDung(input) {
     }
 }
 
+function sortUserTable(loai) {
+    var list = document.getElementsByClassName('nguoidung')[0].getElementsByClassName("table-content")[0];
+    var tr = list.getElementsByTagName('tr');
+
+    quickSort(tr, 0, tr.length-1, loai, getValueOfTypeInTable_User);
+    decrease = !decrease;
+}
+
+function getValueOfTypeInTable_User(tr, loai) {
+    var td = tr.getElementsByTagName('td');
+    switch(loai) {
+        case 'stt': return Number(td[0].innerHTML);
+        case 'hoten' : return td[1].innerHTML.toLowerCase();
+        case 'email' : return td[2].innerHTML.toLowerCase();
+        case 'taikhoan' : return td[3].innerHTML.toLowerCase();
+    }
+    return false;
+}
 
 // ========================== Sản Phẩm ========================
 // Vẽ bảng danh sách sản phẩm
@@ -609,25 +641,6 @@ function getValueOfTypeInTable_SanPham(tr, loai) {
         case 'ten' : return td[2].innerHTML.toLowerCase();
         case 'gia' : return td[4].innerHTML;
         case 'soluong' : return td[5].innerHTML;
-    }
-    return false;
-}
-
-function sortUserTable(loai) {
-    var list = document.getElementsByClassName('nguoidung')[0].getElementsByClassName("table-content")[0];
-    var tr = list.getElementsByTagName('tr');
-
-    quickSort(tr, 0, tr.length-1, loai, getValueOfTypeInTable_User);
-    decrease = !decrease;
-}
-
-function getValueOfTypeInTable_User(tr, loai) {
-    var td = tr.getElementsByTagName('td');
-    switch(loai) {
-        case 'stt': return Number(td[0].innerHTML);
-        case 'hoten' : return td[1].innerHTML.toLowerCase();
-        case 'email' : return td[2].innerHTML.toLowerCase();
-        case 'taikhoan' : return td[3].innerHTML.toLowerCase();
     }
     return false;
 }
