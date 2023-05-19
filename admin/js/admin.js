@@ -1,5 +1,6 @@
 var productList = [];
 var userList = [];
+var donHangList = [];
 function setListProducts(newList) {
     window.localStorage.setItem('ListProduct', JSON.stringify(newList));
 }
@@ -15,6 +16,7 @@ function domId(id) {
 window.onload = async function () {
     list_product = getListProducts() || list_product;
     await fetchUserList();
+    await fetchDonHang();
     addEventChangeTab();
     addTableProducts();
     openTab("Sản Phẩm");
@@ -55,6 +57,7 @@ function openTab(nameTab) {
     switch(nameTab) {
         case 'Sản Phẩm': document.getElementsByClassName('sanpham')[0].style.display = 'block'; break;
         case 'Người Dùng': document.getElementsByClassName('nguoidung')[0].style.display = 'block'; break;
+        case 'Đơn Hàng': document.getElementsByClassName('donhang')[0].style.display = 'block'; break;
     }
 }
 
@@ -685,5 +688,176 @@ function swap(arr, i, j) {
     arr[i].parentNode.replaceChild(tempj, arr[i]);
     arr[j].parentNode.replaceChild(tempi, arr[j]);
 }
+
+// ========================== Đơn Hàng ========================
+
+async function fetchDonHang() {
+    donHangList = [];
+    try {
+        const response = await fetch('https://63e677b27eef5b223386ae8a.mockapi.io/signin/');
+        const data = await response.json();
+        const filteredData = data.filter(item => item.ordered && item.ordered.length > 0);
+        donHangList = await mapDonHangList(filteredData);
+        renderDonHang(donHangList);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function mapDonHangList(data) {
+    const donHangList = [];
+
+    for (const item of data) {
+        if (item.ordered && item.ordered.length > 0) {
+            const ordered = item.ordered;
+            const donHangs = ordered.flatMap((order) => {
+                const orderItems = order.orderItem;
+
+                const donHang = {
+                    id: item.id,
+                    khachHang: item.fullName,
+                    sanPham: '',
+                    tongTien: '',
+                    trangThai: '',
+                };
+
+                if (orderItems.length === 1) {
+                    const orderItem = orderItems[0];
+                    donHang.sanPham = `${orderItem.product.name} - Số lượng: ${orderItem.quantity}`;
+                } else {
+                    donHang.sanPham = orderItems.map((orderItem) => {
+                        return `${orderItem.product.name} - Số lượng: ${orderItem.quantity}`;
+                    }).join(', ');
+                }
+
+                donHang.tongTien = calculateTotalPrice(order);
+                donHang.trangThai = order.state ? 'Đã xác nhận' : 'Chưa xác nhận';
+
+                return donHang;
+            });
+
+            donHangList.push(...donHangs);
+        }
+    }
+
+    return donHangList;
+}
+
+function renderDonHang(data) {
+    data = data || donHangList;
+
+    var tc = document
+        .getElementsByClassName("donhang")[0]
+        .getElementsByClassName("table-content")[0];
+    var s = `<table class="table-outline">`;
+
+    for (var i = 0; i < data.length; i++) {
+        s += `<tr>
+            <td style="width: 5%">${data[i].id}</td>
+            <td style="width: 15%">${data[i].khachHang}</td>
+            <td style="width: 30%">${data[i].sanPham}</td>
+            <td style="width: 25%">${data[i].tongTien}</td>
+            <td style="width: 15%">${data[i].trangThai}</td>
+            <td style="width: 10%">
+                <div class="tooltip">
+                     <i class="fa fa-check-square-o"  id="confirm-button" onclick="xacNhanDonHang(${data[i].id})"></i>
+                    <span>Xác nhận</span>
+                </div>
+                <div class="tooltip">
+                    <i class="fa fa-close" id="cancle-button" onclick="huyDonHang(${data[i].id})"></i>
+                    <span>Hủy</span>
+                </div>
+            </td>
+        </tr>`;
+    }
+    s += `</table>`;
+    tc.innerHTML = s;
+}
+
+function calculateTotalPrice(order) {
+    let totalPrice = 0;
+
+    for (const orderItem of order.orderItem) {
+        const quantity = orderItem.quantity;
+        const price = orderItem.product.price;
+        const itemTotalPrice = quantity * price;
+        totalPrice += itemTotalPrice;
+    }
+
+    return totalPrice;
+}
+function xacNhanDonHang() {
+    // Lấy đối tượng button xác nhận
+    var confirmButton = document.getElementById('confirm-button');
+    // Gán sự kiện click cho button xác nhận
+    confirmButton.addEventListener('click', function () {
+        // Hiển thị hộp thoại xác nhận
+        var result = confirm('Bạn có chắc chắn muốn xác nhận đơn hàng?');
+
+        // Kiểm tra kết quả từ hộp thoại xác nhận
+        if (result) {
+            // Nếu người dùng nhấn OK, thực hiện các hành động xác nhận đơn hàng ở đây
+            console.log('Đơn hàng đã được xác nhận.');
+
+        } else {
+            // Nếu người dùng nhấn Cancel, không thực hiện hành động nào
+            console.log('Đơn hàng không được xác nhận.');
+        }
+    });
+}
+
+
+// Gọi hàm xác nhận đơn hàng khi cần thiết
+xacNhanDonHang();
+
+
+function huyDonHang(idDonHang) {
+    // Lấy đối tượng button hủy đơn hàng
+    var cancelButton = document.getElementById('cancel-button');
+
+// Gán sự kiện click cho button hủy đơn hàng
+    cancelButton.addEventListener('click', function () {
+        // Hiển thị hộp thoại xác nhận
+        var result = confirm('Bạn có chắc chắn muốn hủy đơn hàng?');
+
+        // Kiểm tra kết quả từ hộp thoại xác nhận
+        if (result) {
+            // Nếu người dùng nhấn OK, thực hiện các hành động hủy đơn hàng ở đây
+            console.log('Đơn hàng đã được hủy.');
+
+            // Gửi yêu cầu đến máy chủ để hủy đơn hàng
+            fetch('/huy-don-hang', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({orderId: 'Mã đơn hàng'})
+            })
+                .then(function (response) {
+                    if (response.ok) {
+                        // Hủy đơn hàng thành công
+                        console.log('Đơn hàng đã được hủy thành công.');
+
+                    } else {
+                        // Hủy đơn hàng thất bại
+                        console.log('Hủy đơn hàng thất bại.');
+
+                    }
+                })
+                .catch(function (error) {
+                    // Xảy ra lỗi trong quá trình gửi yêu cầu
+                    console.log('Đã xảy ra lỗi: ', error);
+                });
+        } else {
+            // Nếu người dùng nhấn Cancel, không thực hiện hành động nào
+            console.log('Đơn hàng không được hủy.');
+        }
+    });
+}
+// Gọi hàm hủy đơn hàng khi cần thiết
+huyDonHang();
+
+
+
 
 
