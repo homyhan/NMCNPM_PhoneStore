@@ -242,13 +242,29 @@ function changeAmount(id, number) {
         )
         .then((response) => {
           const currentCart = response.data;
+          var isInventory=true;
+          var quantity_inventory =0;
+          console.log(productList);
+          for (let i = 0; i < productList.length; i++) {
+            if(productList[i].id===id){
+              // if (id === currentCart.cartList[i].product.id) {
+              //   var quantity = currentCart.cartList[i].quantity * 1;              
+              //   var index = i;
+              //   currentCart.cartList[i].quantity += number;
+              //   isExist = true;
+              // }
+              quantity_inventory = productList[i].quantity;
+              
+            }
 
+          }          
           for (var i = 0; i < currentCart.cartList.length; i++) {
             // var itemCurrent = cart[i];
             if (id === currentCart.cartList[i].product.id) {
-              var quantity = currentCart.cartList[i].quantity * 1;
-              var index = i;
-              currentCart.cartList[i].quantity += number;
+              var quantity = currentCart.cartList[i].quantity * 1;              
+              var index = i;              
+               currentCart.cartList[i].quantity += number;
+              
               isExist = true;
             }
             if (currentCart.cartList[i].quantity == 0) {
@@ -450,7 +466,7 @@ function btnDathang() {
           await profile();
           await productServ.fetchProfile(userInfo.id).then((res) => {});
 
-          fetchOrder();
+          await fetchOrder();
           renderCart();
           domId("amount").innerHTML = cart.length;
           orderList = [];
@@ -663,16 +679,16 @@ async function fetchOrder() {
     .fetchCart(userInfo.account)
     .then((res) => {
       const listOrdered = res.data[0].ordered;
-      listOrdered.map((item, index) => {
+      console.log(listOrdered);
+      listOrdered?.map((item, index) => {
         html += `
         <div>
-          <p style="margin: 0px">${item.orderItem
-            .map((itemName) => {
+          <p style="margin: 0px">${item?.orderItem?.map((itemName) => {
               return `<div>
-              <p style="margin: 0px">${itemName.quantity} ${
-                itemName.product.name
+              <p style="margin: 0px">${itemName?.quantity} ${
+                itemName?.product?.name
               } - ${formatCurrencyVND(
-                itemName.product.price * itemName.quantity
+                itemName?.product?.price * itemName?.quantity
               )}</p>
             </div>`;
             })
@@ -723,7 +739,7 @@ function cancelOrder(id) {
           console.log("Giỏ hàng đã xoa mot san pham:", response.data);
           await profile();
           await productServ.fetchProfile(userInfo.id).then((res) => {});
-          fetchOrder();
+          await fetchOrder();
         })
         .catch((error) => {
           console.error("Lỗi khi cập nhật giỏ hàng:", error);
@@ -795,6 +811,10 @@ async function searchProduct() {
     });
 }
 
+domId("modalOrdered").addEventListener('click', async function () {
+  await fetchOrder();
+})
+
 async function signup(event) {
   event.preventDefault();
 
@@ -854,7 +874,7 @@ async function signup(event) {
   // Gọi API để tạo người dùng mới
   axios
     .post("https://63e677b27eef5b223386ae8a.mockapi.io/signin/", user)
-    .then(function (response) {
+    .then(async function (response) {
       console.log(response.data);
       alert("Đăng ký thành công.");
       // Xử lý sau khi đăng ký thành công, ví dụ: chuyển hướng đến trang đăng nhập
@@ -862,6 +882,9 @@ async function signup(event) {
       domId("modalSignup").style.display = "none";
       document.querySelector("body").classList.remove("modal-open");
       document.querySelector(".modal-backdrop").remove();
+      await fetchAccSigninList();
+      await fetchProductList();
+      
     })
     .catch(function (error) {
       console.error(error);
