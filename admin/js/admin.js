@@ -907,11 +907,10 @@ function swap(arr, i, j) {
 // ========================== Đơn Hàng ========================
 
 async function fetchDonHang() {
-    donHangList = [];
     try {
         const response = await fetch('https://63e677b27eef5b223386ae8a.mockapi.io/signin/');
         const data = await response.json();
-        const filteredData = data.filter(item => item.ordered && item.ordered.length > 0);
+        const filteredData = data.filter((item) => item.ordered && item.ordered.length > 0);
         donHangList = await mapDonHangList(filteredData);
         renderDonHang(donHangList);
     } catch (error) {
@@ -920,12 +919,12 @@ async function fetchDonHang() {
 }
 
 async function mapDonHangList(data) {
-    const donHangList = [];
+    donHangList = [];
 
     for (const item of data) {
         if (item.ordered && item.ordered.length > 0) {
             const ordered = item.ordered;
-            const donHangs = ordered.flatMap((order) => {
+            const donHangs = ordered.flatMap((order, orderIndex) => {
                 const orderItems = order.orderItem;
 
                 const donHang = {
@@ -934,6 +933,7 @@ async function mapDonHangList(data) {
                     sanPham: '',
                     tongTien: '',
                     trangThai: '',
+                    orderItemId: orderIndex, // Lưu vị trí của orderItem trong ordered
                 };
 
                 if (orderItems.length === 1) {
@@ -975,12 +975,12 @@ function renderDonHang(data) {
             <td style="width: 15%">${data[i].trangThai}</td>
             <td style="width: 10%">
                 <div class="tooltip">
-                     <i class="fa fa-check-square-o"  id="confirm-button" onclick="xacNhanDonHang(${data[i].id})"></i>
-                    <span>Xác nhận</span>
+                     <i class="fa fa-check-square-o" onclick="xacNhanDonHang(${data[i].id}, ${data[i].orderItemId})"></i>
+                    <span class="tooltiptext">Xác nhận</span>
                 </div>
                 <div class="tooltip">
-                    <i class="fa fa-close" id="cancle-button" onclick="huyDonHang(${data[i].id})"></i>
-                    <span>Hủy</span>
+                    <i class="fa fa-close" onclick="huyDonHang(${data[i].id}, ${data[i].orderItemId})"></i>
+                    <span class="tooltiptext">Hủy</span>
                 </div>
             </td>
         </tr>`;
@@ -1001,77 +1001,92 @@ function calculateTotalPrice(order) {
 
     return totalPrice;
 }
-// function xacNhanDonHang() {
-//     // Lấy đối tượng button xác nhận
-//     var confirmButton = document.getElementById('confirm-button');
-//     // Gán sự kiện click cho button xác nhận
-//     confirmButton.addEventListener('click', function () {
-//         // Hiển thị hộp thoại xác nhận
-//         var result = confirm('Bạn có chắc chắn muốn xác nhận đơn hàng?');
-//
-//         // Kiểm tra kết quả từ hộp thoại xác nhận
-//         if (result) {
-//             // Nếu người dùng nhấn OK, thực hiện các hành động xác nhận đơn hàng ở đây
-//             console.log('Đơn hàng đã được xác nhận.');
-//
-//         } else {
-//             // Nếu người dùng nhấn Cancel, không thực hiện hành động nào
-//             console.log('Đơn hàng không được xác nhận.');
-//         }
-//     });
-// }
-//
-//
-// // Gọi hàm xác nhận đơn hàng khi cần thiết
-// xacNhanDonHang();
-//
-//
-// function huyDonHang(idDonHang) {
-//     // Lấy đối tượng button hủy đơn hàng
-//     var cancelButton = document.getElementById('cancel-button');
-//
-// // Gán sự kiện click cho button hủy đơn hàng
-//     cancelButton.addEventListener('click', function () {
-//         // Hiển thị hộp thoại xác nhận
-//         var result = confirm('Bạn có chắc chắn muốn hủy đơn hàng?');
-//
-//         // Kiểm tra kết quả từ hộp thoại xác nhận
-//         if (result) {
-//             // Nếu người dùng nhấn OK, thực hiện các hành động hủy đơn hàng ở đây
-//             console.log('Đơn hàng đã được hủy.');
-//
-//             // Gửi yêu cầu đến máy chủ để hủy đơn hàng
-//             fetch('/huy-don-hang', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json'
-//                 },
-//                 body: JSON.stringify({orderId: 'Mã đơn hàng'})
-//             })
-//                 .then(function (response) {
-//                     if (response.ok) {
-//                         // Hủy đơn hàng thành công
-//                         console.log('Đơn hàng đã được hủy thành công.');
-//
-//                     } else {
-//                         // Hủy đơn hàng thất bại
-//                         console.log('Hủy đơn hàng thất bại.');
-//
-//                     }
-//                 })
-//                 .catch(function (error) {
-//                     // Xảy ra lỗi trong quá trình gửi yêu cầu
-//                     console.log('Đã xảy ra lỗi: ', error);
-//                 });
-//         } else {
-//             // Nếu người dùng nhấn Cancel, không thực hiện hành động nào
-//             console.log('Đơn hàng không được hủy.');
-//         }
-//     });
-// }
-// // Gọi hàm hủy đơn hàng khi cần thiết
-// huyDonHang();
-//
+
+async function xacNhanDonHang(id, orderItemId) {
+    try {
+        const response = await fetch(`https://63e677b27eef5b223386ae8a.mockapi.io/signin/${id}`);
+        const data = await response.json();
+
+        // Tìm orderItem để cập nhật
+        const selectedOrderItem = data.ordered[orderItemId];
+        if (selectedOrderItem) {
+            // Cập nhật trạng thái thành true
+            selectedOrderItem.state = true;
+
+            // Cập nhật danh sách đơn hàng mới
+            await fetchDonHang();
+
+            // Cập nhật danh sách đơn hàng lên giao diện
+            renderDonHang(donHangList);
+
+            // Lưu dữ liệu đã cập nhật lên API mock
+            const updateResponse = await fetch(`https://63e677b27eef5b223386ae8a.mockapi.io/signin/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (updateResponse.ok) {
+                // Cập nhật orderItem thành công
+                await fetchDonHang();
+                alert('Cập nhật orderItem thành công');
+            } else {
+                // Cập nhật orderItem không thành công
+                alert('Cập nhật orderItem không thành công');
+            }
+        } else {
+            // Không tìm thấy orderItem
+            alert('Không tìm thấy orderItem');
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function huyDonHang(id, orderItemId) {
+    try {
+        const response = await fetch(`https://63e677b27eef5b223386ae8a.mockapi.io/signin/${id}`);
+        const data = await response.json();
+
+        // Tìm orderItem để xóa
+        const selectedOrderItem = data.ordered[orderItemId];
+        if (selectedOrderItem) {
+            // Xóa orderItem khỏi ordered
+            data.ordered.splice(orderItemId, 1);
+
+            // Cập nhật danh sách đơn hàng mới
+            await fetchDonHang();
+
+            // Cập nhật danh sách đơn hàng lên giao diện
+            renderDonHang(donHangList);
+
+            // Lưu dữ liệu đã cập nhật lên API mock
+            const updateResponse = await fetch(`https://63e677b27eef5b223386ae8a.mockapi.io/signin/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (updateResponse.ok) {
+                // Xóa orderItem thành công
+                await fetchDonHang();
+                alert('Xóa orderItem thành công');
+            } else {
+                // Xóa orderItem không thành công
+                alert('Xóa orderItem không thành công');
+            }
+        } else {
+            // Không tìm thấy orderItem
+            alert('Không tìm thấy orderItem');
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 window.onload = async function () {
     await fetchProductList();
