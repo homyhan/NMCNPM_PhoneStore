@@ -1,6 +1,13 @@
 var productServ={
+    createProduct: function(product){
+        return axios({
+            url: "https://63e677b27eef5b223386ae8a.mockapi.io/phones",
+            method: "POST",
+            data: product,
+        })
+    },
     fetchProduct: function () {
-        return axios({            
+        return axios({
             url: "https://63e677b27eef5b223386ae8a.mockapi.io/phones",
             method: "GET"
         })
