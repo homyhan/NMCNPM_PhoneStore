@@ -141,8 +141,8 @@ function addToCart(id) {
               .then(async (response) => {
                 await profile();
                 await productServ.fetchProfile(userInfo.id).then((res) => {});
-
                 renderCart();
+                alert("Thêm sản phẩm thành công");
               })
               .catch((error) => {
                 console.error("Lỗi khi cập nhật giỏ hàng:", error);
