@@ -13,15 +13,6 @@ function domId(id) {
     return document.getElementById(id);
 }
 
-window.onload = async function () {
-    list_product = getListProducts() || list_product;
-    await fetchUserList();
-    await fetchDonHang();
-    addEventChangeTab();
-    addTableProducts();
-    openTab("Sản Phẩm");
-};
-
 // ======================= Các Tab =========================
 function addEventChangeTab() {
     var sidebar = document.getElementsByClassName('sidebar')[0];
@@ -207,7 +198,7 @@ async function xoaNguoiDung(id, name) {
 
 domId('btnCloseUser').addEventListener('click', function(){
     domId('khungThemNguoiDung').style.transform = "scale(0)";
-    domId('form').reset();
+    domId('formUser').reset();
     var arrError = document.getElementsByClassName("sp-error");
     for (let i = 0; i < arrError.length; i++) {
         arrError[i].innerHTML="";
@@ -458,6 +449,81 @@ function renderProduct(data) {
     tc.innerHTML = s;
 }
 
+// Thêm sản phẩm mới
+let previewSrc; // biến toàn cục lưu file ảnh đang thêm
+domId("btnSubmit").addEventListener('click', async function (e) {
+    e.preventDefault();
+    if (!checkValid()) return;
+
+    var khung = document.getElementById("khungThemSanPham");
+    var tr = khung.getElementsByTagName("tr");
+
+    var masp = tr[1]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+    var type = tr[2]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("select")[0].value;
+    var name = tr[3]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+    var image = tr[4]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].src;
+    var des = tr[5]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("textarea")[0].value;
+    var price = tr[6]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+    var quantity = tr[7]
+        .getElementsByTagName("td")[1]
+        .getElementsByTagName("input")[0].value;
+
+    if (isNaN(price)) {
+        alert("Giá phải là số nguyên");
+        return false;
+    }
+    if (type === "1") {
+        type = "iphone";
+    } else if (type === "2") {
+        type = "samsung";
+    }
+    //tạo ra obj với thuộc tính có giá trị đã điền
+    var prod = new Product(name, price, des, quantity, type, previewSrc, masp);
+
+    //call api truyền dữ liệu obj được tạo vào
+    var promise = productServ.createProduct(prod);
+    try {
+        var res = await promise;
+        console.log("Res", res);
+        await fetchProductList();
+        await alert("Thêm sản phẩm thành công");
+        document.getElementById("khungThemSanPham").style.transform = "scale(0)";
+    } catch (err) {
+        console.log(err);
+        alert("Lỗi");
+    }
+})
+
+
+// Cập nhật ảnh sản phẩm review
+function capNhatAnhSanPham(files, id) {
+    const reader = new FileReader();
+    reader.addEventListener(
+        "load",
+        function () {
+            // convert image file to base64 string
+            previewSrc = reader.result;
+            document.getElementById(id).src = previewSrc;
+        },
+        false
+    );
+
+    if (files[0]) {
+        reader.readAsDataURL(files[0]);
+    }
+}
 
 // Hàm xóa sản phẩm với id và tên sản phẩm được truyền vào
 async function xoaSanPham(id, name) {
@@ -581,7 +647,39 @@ function addKhungSuaSanPham(id) {
     khung.style.transform = 'scale(1)';
 }
 
+async function capNhatSanPham(id) {
+    // Lấy thông tin sản phẩm cần cập nhật từ form
+    var spCapNhat = layThongTinSanPhamTuTable("khungSuaSanPham");
+    if (!spCapNhat) return;
 
+    // Kiểm tra sản phẩm có tồn tại trong productList hay không
+    var spCu = productList.find(sp => sp.id === id);
+    if (!spCu) {
+        alert("Không tìm thấy sản phẩm cần cập nhật.");
+        return false;
+    }
+
+    // Cập nhật thông tin sản phẩm mới
+    var spMoi = {
+        ...spCu,
+        type: spCapNhat.type,
+        name: spCapNhat.name,
+        price: spCapNhat.price,
+        description: spCapNhat.description,
+        image: spCapNhat.image,
+    };
+
+    // Gọi API để cập nhật sản phẩm
+    try {
+        const response = await axios.put(`https://63e677b27eef5b223386ae8a.mockapi.io/phones/${id}`, spMoi);
+        console.log(response.data);
+        await fetchProductList();
+        alert(`Đã cập nhật sản phẩm có id là ${id} thành công.`);
+        document.getElementById("khungSuaSanPham").style.transform = "scale(0)";
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 //validate: bắt buộc nhập giá trị
 function required(val, config) {
@@ -975,6 +1073,13 @@ function calculateTotalPrice(order) {
 // huyDonHang();
 //
 
-
+window.onload = async function () {
+    await fetchProductList();
+    await fetchUserList();
+    await fetchDonHang();
+    addEventChangeTab();
+    openTab("Sản Phẩm");
+    console.log("productList", productList);
+};
 
 
