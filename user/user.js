@@ -646,7 +646,7 @@ async function signin(e) {
         return notification === false;
       })
     ) {
-      console.log("Lỗi thông tin. Vui lòng nhập lại");
+      alert("Lỗi thông tin vui lòng nhập lại");
     }
   } else {
     console.log("ok");
